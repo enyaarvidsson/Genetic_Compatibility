@@ -39,13 +39,13 @@ mobility_df = pd.DataFrame({
 })
 print(mobility_df.head())
 
-'''  
+
 # Save to csv-file
-mobility_df.to_csv("/storage/enyaa/mobility/mobility_classification_10k.csv", index=False)
-print("File 'mobility_classification_10k.csv' created successfully!")
+mobility_df.to_csv("/storage/jolunds/mobility_classification_1.csv", index=False)
+print("File 'mobility_classification_1.csv' created successfully!")
 
 # How many are mobile, not mobile
 print("Mobile:", mobile)
 print("Not mobile:", not_mobile)
 print("Unclear:", unclear)
-'''
+

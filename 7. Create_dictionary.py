@@ -49,7 +49,7 @@ for filename in os.listdir(directory):
     kmer_dict[bacteria_id] = df.set_index("kmer")["count"].to_dict() # Adds the normalized counts to dictionary
 
 # Save dictionary to a pickle-file:
-save_path = "/storage/enyaa/REVISED/KMER/genome_dist/genome_kmer_distributions_6.pkl"    
+save_path = "/storage/enyaa/REVISED/KMER/genome_dist/genome_kmer_distributions_7.pkl"    
 with open(save_path, "wb") as f:
     pickle.dump(kmer_dict, f)
     

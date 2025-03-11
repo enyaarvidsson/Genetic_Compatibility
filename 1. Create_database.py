@@ -27,13 +27,13 @@ with open(filepaths, newline='', encoding='utf-8') as tsv_file:
 # get the first 100k lines in the file
 file_paths_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_filepaths.tsv"
 df = pd.read_csv(file_paths_file, sep="\t", header=None) 
-file_paths = df[0].tolist()[1400_000:1500_000]
+file_paths = df[0].tolist()[1500_000:]
 
 #print(file_paths_10)
 
 # Open bacterial genome zip-files
 # create one fasta file for all 100k genomes
-output_fasta = "/storage/enyaa/REVISED/BLAST/FASTA/genomes_15.fasta"
+output_fasta = "/storage/enyaa/REVISED/BLAST/FASTA/genomes_16.fasta"
 
 with open(output_fasta, "w") as fasta_out:
     
@@ -54,7 +54,7 @@ with open(output_fasta, "w") as fasta_out:
 
 
 # Create BLAST database:
-blast_path = "/storage/enyaa/REVISED/BLAST/DB_15/blast_15" # name for BLAST database
+blast_path = "/storage/enyaa/REVISED/BLAST/DB_16/blast_16" # name for BLAST database
 subprocess.run(["makeblastdb", "-in", output_fasta, "-dbtype", "nucl", "-out", blast_path]) # runs this command in the terminal to create a database
 
 end_time = time.time()

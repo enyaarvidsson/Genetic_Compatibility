@@ -22,9 +22,9 @@ with open(query_file, "w") as out_file:
 start_time = time.time()
 
 # Run BLASTn between 6000 genes and 100k genomes
-blast_db = "/storage/enyaa/REVISED/BLAST/DB_15/blast_15"
+blast_db = "/storage/enyaa/REVISED/BLAST/DB_16/blast_16"
 query_file = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta" # all 6k genes
-store_results = "/storage/enyaa/REVISED/BLAST/BLAST_RESULTS/blast_results_15.txt"
+store_results = "/storage/enyaa/REVISED/BLAST/BLAST_RESULTS/blast_results_16.txt"
 subprocess.run(["blastn", "-query", query_file, "-db", blast_db, "-out", store_results, "-perc_identity", "95", 
                 "-max_target_seqs", "100000", "-num_threads", "8", "-evalue", "1e-5", "-outfmt", "6"],
                 check=True) # "-outfmt", "6" - means that output is in a tabular format (tab-separated file)    

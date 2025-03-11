@@ -3,7 +3,7 @@
 import pandas as pd
 
 # Get the gene IDs and bacteria IDs from the BLAST results
-with open("/storage/enyaa/REVISED/BLAST/BLAST_RESULTS/blast_results_9.txt") as f: # opens the file for reading, stores in f
+with open("/storage/enyaa/REVISED/BLAST/BLAST_RESULTS/blast_results_1.txt") as f: # opens the file for reading, stores in f
     lines = f.readlines() # reads the lines in the file and stores them in a list "lines"
 
 gene_header = [line.split("\t")[0] for line in lines]
@@ -34,11 +34,11 @@ merged_df = pd.merge(blast_results_df, taxonomy_df, on="Bacteria_ID", how="left"
 print(merged_df.head())
 print(len(merged_df))
 
-'''
+
 # Store results
-store_results = "/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_9.csv"
-matching_rows.to_csv(store_results, index=False, header=False) # Creates file with the results
-'''
+store_results = "/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_1.csv"
+merged_df.to_csv(store_results, index=False, header=False) # Creates file with the results
+
 
 '''
 # Find matching genomes by bacteria ID

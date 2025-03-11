@@ -32,7 +32,7 @@ with open("/storage/enyaa/REVISED/KMER/genome_dist/genome_kmer_distributions_1.p
 
 # Find random genomes
 random.seed(50) # get the same genomes each time
-random_bacteria_ids = random.sample(list(genome_dictionary.keys()), 50) # Lists the keys in the dictionary and takes 1000 random ones
+random_bacteria_ids = random.sample(list(genome_dictionary.keys()), 5000) # Lists the keys in the dictionary and takes 1000 random ones
     # the keys of the genome_dictionary is the bacteria IDs so it takes out 1000 bacteria IDs
 
 # Distributions for the random bacteria (creates a new dictionary)   
@@ -99,42 +99,49 @@ euclidean_df = euclidean_df.merge(full_taxonomy_df[["Bacteria_ID", "Phylum"]], o
 
 
 # ONLY PHYLA WITH MOST GENOMES ----------------------
-top_phyla = euclidean_df["Phylum"].value_counts().head(2)
-print(top_phyla)
+top_phyla = euclidean_df["Phylum"].value_counts().head(6)
+#print(top_phyla)
 euclidean_filtered_df = euclidean_df[euclidean_df["Phylum"].isin(top_phyla.index)]
 #print(euclidean_filtered_df.head())
     # euclidean_filtered_df - contains only the bacteria from the top phyla
-print(euclidean_filtered_df)
+
 
 
 # BINS FOR THE HISTOGRAM ----------------------------
 # Make sure the bins are same size for all subplots 
 nr_bins = 20 # Number of bins/bars 
 min_value = euclidean_filtered_df["Euclidean_distance"].min()
-max_value = euclidean_filtered_df["Euclidean_distance"].max()
+max_value = euclidean_filtered_df["Euclidean_distance"].max() + 0.001 # so all values fall inside the max_value
 bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
 
 # DOWNSAMPLE NO_MATCH -------------------------------
-downsample_factor = 0.8 # keep 20% of the no_match bacteria, from each bin
-
-# creates a df for match, and a df for no_match
-matches_df = euclidean_filtered_df[euclidean_filtered_df["Match_status"] == "Match"]
-no_matches_df = euclidean_filtered_df[euclidean_filtered_df["Match_status"] == "No_match"]
+downsample_factor = 0.2 # keep 20% of the no_match bacteria, from each bin
 
 downsampled_no_matches = [] # will become a list of dataframes
 
-for bin_value in bin_edges[:-1]: # iterates through the bin_edges, except the last one
-    # bacteria with no match in bin
-    no_match_in_bin = no_matches_df[(no_matches_df["Euclidean_distance"] >= bin_value) & 
-                                   (no_matches_df["Euclidean_distance"] < bin_value + (bin_edges[1] - bin_edges[0]))]
-    # downsample 
-    nr_to_keep = int(len(no_match_in_bin) * downsample_factor)
-    if nr_to_keep > 0:
-        downsampled_no_matches.append(no_match_in_bin.sample(nr_to_keep))
+for phylum, phylum_df in euclidean_filtered_df.groupby("Phylum"): # phylum - name of phylum, phylum_df - df that has only rows from that phylum
+    
+    # create a df for match and a df for no_match
+    matches_phylum_df = phylum_df[phylum_df["Match_status"] == "Match"]
+    no_matches_phylum_df = phylum_df[phylum_df["Match_status"] == "No_match"]  
 
-downsampled_no_matches = pd.concat(downsampled_no_matches) # makes the list of dataframes into one df
-downsampled_df = pd.concat([matches_df, downsampled_no_matches])
+    # each bacteria is assigned to a bin
+    bin_nr = np.digitize(no_matches_phylum_df["Euclidean_distance"], bin_edges) - 1  # subtracting 1 to get index starting from 0
+    no_matches_phylum_df["bin_nr"] = bin_nr
+
+    # group by bins and downsample
+    downsampled_no_matches_phylum_df = (
+        no_matches_phylum_df.groupby(bin_nr, group_keys=False) # group_keys=False - group labels not added to the output
+        .apply(lambda x: x.sample(frac=downsample_factor) if len(x) > 1 else x) 
+    ) # lambda is a funtion, x - one bin from groupby, sample - randomly selects rows, if it is only 1 row/bacteria, it keeps it
+
+    # Append both "Match" and downsampled "No_match" bacteria
+    downsampled_no_matches.append(pd.concat([matches_phylum_df, downsampled_no_matches_phylum_df]))
+
+# Combine all phyla into the final df
+downsampled_df = pd.concat(downsampled_no_matches, ignore_index=True)
+    # downsampled_df contains all matches, but downsampled no_matches
 
 
 # HISTOGRAM -----------------------------------------

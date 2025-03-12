@@ -15,7 +15,7 @@ import time
 
 file_paths_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_filepaths.tsv"
 df = pd.read_csv(file_paths_file, sep="\t", header=None) 
-file_paths = df[0].tolist()[700_000:800_000] # extracts first column in df, converts to list, takes the first 10k filepaths
+file_paths = df[0].tolist()[800_000:900_000] # extracts first column in df, converts to list, takes the first 10k filepaths
 
 temp_dir = "/storage/enyaa/REVISED/KMER/genome_temp_remove" # Temporary directory
 output_dir = "/storage/enyaa/REVISED/KMER/genome_kmer"

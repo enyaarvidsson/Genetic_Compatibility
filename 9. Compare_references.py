@@ -23,7 +23,7 @@ for key, value in card_info.items():
 #print(len(chromosomal_genes)) #995
 
 # Load mobility
-path = "/storage/jolunds/mobility_classification_1.csv"
+path = "/storage/enyaa/REVISED/mobility_classification_all.csv"
 mobility_df = pd.read_csv(path, sep=",")
 
 # Filter for the chromosomal genes
@@ -34,7 +34,7 @@ chromosomal_df = mobility_df[mobility_df['Gene_name'].isin(chromosomal_genes)]
 not_mobile_df = chromosomal_df[chromosomal_df['Mobility'] == 'Not_mobile']
 
 # Load taxonomy results 
-taxonomy_df = pd.read_csv("/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_1.csv", header=None) # create a pandas dataframe
+taxonomy_df = pd.read_csv("/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_all.csv", header=None) # create a pandas dataframe
 taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
 not_mobile_taxonomy = taxonomy_df[taxonomy_df['Gene_name'].isin(not_mobile_df['Gene_name'])]
@@ -55,11 +55,18 @@ incomp_gene_names = ["NDM", "VIM", "IMP", "CphA"] #Metallo betalaktamases
 
 # BOTH -----------
 # Load euclidean df
-euclidean_df = pd.read_csv("/storage/enyaa/REVISED/KMER/euclidean_df.pkl") # NOT CREATED YET
+euclidean_df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl") # NOT CREATED YET
 
-comp_euclidean_df = euclidean_df.loc[compatible_df['Gene_name'], compatible_df['Bacteria_ID']] # Compatible referemce
+# Ensure only existing bacteria IDs are used
+existing_bacteria_ids = set(euclidean_df.columns)  # Get available bacteria IDs
+filtered_incomp_bacteria_id = incomp_bacteria_id[incomp_bacteria_id.isin(existing_bacteria_ids)]  # Filter valid ones
 
-incomp_euclidean_df = euclidean_df.loc[:, euclidean_df.columns.isin(incomp_bacteria_id)] # Incompatible reference
+#comp_euclidean_df = euclidean_df.loc[compatible_df['Gene_name'], compatible_df['Bacteria_ID']] # Compatible referemce
+
+comp_euclidean_df = euclidean_df.reindex(index=compatible_df['Gene_name'], columns=compatible_df['Bacteria_ID']).dropna(how="all", axis=[0,1])
+#incomp_euclidean_df = euclidean_df.loc[:, euclidean_df.columns.isin(incomp_bacteria_id)] # Incompatible reference
+#incomp_euclidean_df = incomp_euclidean_df[incomp_euclidean_df.index.str.startswith(tuple(incomp_gene_names))]
+incomp_euclidean_df = euclidean_df.loc[:, euclidean_df.columns.isin(filtered_incomp_bacteria_id)]
 incomp_euclidean_df = incomp_euclidean_df[incomp_euclidean_df.index.str.startswith(tuple(incomp_gene_names))]
 
 # Merge to one 
@@ -77,9 +84,8 @@ sns.histplot(data=df_plot, x='Euclidean Distance', hue='Reference', bins=20, kde
 
 plt.xlabel("Euclidean distance")
 plt.ylabel("Number of bacteria")
-plt.title("")
 
-plt.savefig("/home/jolunds/newtest/compatible_references.png")
+plt.savefig("/home/enyaa/gene_genome/histogram_references.png")
 plt.close()
 
 '''

@@ -36,4 +36,4 @@ euclidean_df = pd.concat(euclidean_list_df, axis=1)
 print(euclidean_df.head())
 
 # Save 
-#euclidean_df.to_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl")
+euclidean_df.to_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl")

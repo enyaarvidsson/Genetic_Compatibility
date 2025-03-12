@@ -1,10 +1,76 @@
 # Create a table with average compatiblity for each phylum
-import pickle
 import pandas as pd
-import numpy as np
 import time
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 start_time = time.time()
+
+# Load euclidean df
+euclidean_df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl") # NOT CREATED YET
+
+# Switch to long format 
+euclidean_df= euclidean_df.melt(ignore_index=False, var_name="Bacteria_ID", value_name="Euclidean_Distance").reset_index()
+
+# Add phylum column
+path = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
+full_lineage_df = pd.read_csv(path, sep="\t", header=None)
+full_lineage_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+
+phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]]
+phylum_euclidean_df = euclidean_df.merge(phylum_mapping, left_on="Bacteria_ID", right_on="Bacteria_ID")
+
+# Calculate mean and standard deviation for each phylum and gene
+phylum_stats = phylum_euclidean_df.groupby(["index", "Phylum"])["Euclidean_Distance"].agg(['mean', 'std']).unstack()
+
+# Count number of matches for each gene in each phylum
+taxonomy_df = pd.read_csv("/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_all.csv", header=None) # create a pandas dataframe
+taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"] # add column names
+
+phylum_bacteria_counts = taxonomy_df.groupby(["Gene_name", "Phylum"])["Bacteria_ID"].nunique().reset_index()
+phylum_bacteria_counts.columns = ["Gene_name", "Phylum", "Num_matches"] 
+
+phylum_stats_reset = phylum_stats.reset_index()
+big_table_df = pd.merge(phylum_stats_reset, phylum_bacteria_counts, on=["Gene_name", "Phylum"], how="left") # Add num matches 
+
+# Filter for the top phyla
+phylum_total_counts = phylum_bacteria_counts.groupby("Phylum")["Num_matches"].sum().reset_index()
+top_phyla = phylum_total_counts.sort_values(by="Num_matches", ascending=False).head(6)["Phylum"]
+
+big_table_df = big_table_df[big_table_df["Phylum"].isin(top_phyla)]
+
+# Save big_table_df as csv
+save_path = "/storage/enyaa/REVISED/KMER/big_table.csv"
+big_table_df.to_csv(save_path, index=False)
+
+# Create scatterplot
+
+plt.figure(figsize=(8,6))
+#sns.scatterplot(data=bacillota_df, x="Unique_Bacteria_Count", y="mean", alpha=0.7)
+
+# Använda facet grid för att göra en figur med en plot för varje phylum
+
+g = sns.FacetGrid(big_table_df, col="Phylum", col_order = top_phyla.index, col_wrap = 3)
+g.map_dataframe(sns.scatterplot, x="Num_matches", y="mean")
+
+g.set_axis_labels("Mean euclidean distance", "Number of bacteria")
+
+
+plt.xlim(-100, 800)
+# Optional: Log scale if values vary widely
+#plt.xscale("log")
+#plt.yscale("log")
+
+# Save plot
+plt.savefig("/home/jolunds/newtest/scatterplot_1.png")
+plt.close()
+
+
+end_time = time.time()
+total_time = (end_time - start_time)/60
+
+print(f"Done creating big table with elapsed time: {total_time} minutes")
+'''
 # Read gene dictionary
 with open("/storage/enyaa/REVISED/KMER/gene_dist/gene_kmer_distributions.pkl", "rb") as file: #"rb": read binary
     gene_dictionary = pickle.load(file)
@@ -62,8 +128,6 @@ for gene_name, kmer_dist in gene_dictionary.items():
     
     phylum_stats = euclidean_df.merge(phylum_bacteria_counts[["Gene_name", "Phylum", "Unique_Bacteria_Count"]],
                                       on=["Gene_name", "Phylum"], how="left")
-    
-    
 
     # Add the mean and standard deviation for each phylum and gene combination
     phylum_stats = phylum_stats.groupby(["Gene_name", "Phylum"]).agg(
@@ -88,7 +152,7 @@ end_time = time.time()
 total_time = (end_time - start_time)/60
 
 print(f"Done creating big table with elapsed time: {total_time} minutes")
-
+'''
 
 '''
 

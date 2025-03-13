@@ -1,10 +1,4 @@
-# Create one big file with all the plots
-
-
-# !!!!!!
-# Kolla upp hur vi ska stänga figuren
-# !!!!!!
-
+# Create one big pdf with all the histograms
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -41,56 +35,103 @@ genomes_df = pd.DataFrame.from_dict(genome_dictionary_10k, orient="index").T
 start_time = time.time() # Starting time
 
 
-# EUCLIDEAN DISTANCE ---------------------------
+# EUCLIDEAN DISTANCE --------------------------------
 # Load euclidean_df
-distance_df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl") # NOT CREATED YET
+euclidean_df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl") # NOT CREATED YET
     # euclidean_df is a df with gene_name as rows and genome_id as columns, and euclidean distance as values
 
 
-# ??? ------------------------
+# TAXONOMY (to find matches later) ------------------
 # Load Taxonomy results
 path = "/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_all.csv"
-taxonomy_results_df = pd.read_csv(path, sep=",", header=None)
-taxonomy_results_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+taxonomy_df = pd.read_csv(path, sep=",", header=None)
+taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
+
+# TAXONOMY (to get phyla later) ---------------------
 # Read full taxonomy file
 taxonomy_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
 full_taxonomy_df = pd.read_csv(taxonomy_file, sep="\t", header=None) 
 full_taxonomy_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
 
+# SAME X-ASIS FOR ALL THE PLOTS ---------------------
+global_min = euclidean_df.min().min() # min x-value
+global_max = euclidean_df.max().max() # max x-value
 
+
+# PDF -----------------------------------------------
 pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_3.pdf")
 
-for gene_name in distance_df.index[:3]:
-    # get the euclidean distances for the gene_name
-    euclidean_df = pd.DataFrame({
-        'Bacteria_ID': distance_df.columns,
-        'Euclidean_distance': distance_df.loc[gene_name]
-    })
 
+# FOR EACH GENE_NAME --------------------------------
+for gene_name in sorted(euclidean_df.index)[:3]: # loops through the gene_names in alphabetical order
+    
+    # EUCLIDEAN DISTANCE for one gene ---------------
+    euclidean_gene_df = pd.DataFrame({
+        'Bacteria_ID': euclidean_df.columns,
+        'Euclidean_distance': euclidean_df.loc[gene_name]
+    })  # euclidean_gene_df - has one column Bacteria_ID with the bacteria_ids, and one column with euclidean distance (also has bacteria_id as row index)
+        # for gene_name 
+
+    # -----------------------------------------------
+    # MATCH STATUS (from taxonomy) ------------------
     # Find matching bacteria for this gene
-    matching_df = taxonomy_results_df[taxonomy_results_df["Gene_name"] == gene_name][["Bacteria_ID"]]
+    matching_df = taxonomy_df[taxonomy_df["Gene_name"] == gene_name][["Bacteria_ID"]]
     
     # Add match status column using merge
-    euclidean_df = euclidean_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left")
-    euclidean_df["Match_status"] = euclidean_df["Match_status"].fillna("No_match")
+    euclidean_gene_df = euclidean_gene_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left")
+    euclidean_gene_df["Match_status"] = euclidean_gene_df["Match_status"].fillna("No_match")
 
     # Merge with full taxonomy to get Phylum information
-    euclidean_df = euclidean_df.merge(full_taxonomy_df[["Bacteria_ID", "Phylum"]], on="Bacteria_ID", how="left")
+    euclidean_gene_df = euclidean_gene_df.merge(full_taxonomy_df[["Bacteria_ID", "Phylum"]], on="Bacteria_ID", how="left")
 
     # Select top 6 most frequent phyla
-    top_phyla = euclidean_df["Phylum"].value_counts().head(6)
-    euclidean_top_phyla_df = euclidean_df[euclidean_df["Phylum"].isin(top_phyla.index)]
-
+    top_phyla = euclidean_gene_df["Phylum"].value_counts().head(6)
+    euclidean_top_phyla_df = euclidean_gene_df[euclidean_gene_df["Phylum"].isin(top_phyla.index)]
 
     # HISTOGRAM
     nr_bins = 20
+    #bin_edges = np.linspace(global_min, global_max, nr_bins + 1)
     min_value, max_value = euclidean_top_phyla_df["Euclidean_distance"].min(), euclidean_top_phyla_df["Euclidean_distance"].max()
     bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
+
+    # DOWNSAMPLE NO_MATCH
+    downsample_factor = 0.2 # keep 20% of the no_match bacteria, from each bin
+
+    downsampled_no_matches = [] # will become a list of dataframes
+
+    for phylum, phylum_df in euclidean_top_phyla_df.groupby("Phylum"): # phylum - name of phylum, phylum_df - df that has only rows from that phylum
+    
+        # create a df for match and a df for no_match
+        matches_phylum_df = phylum_df[phylum_df["Match_status"] == "Match"]
+        no_matches_phylum_df = phylum_df[phylum_df["Match_status"] == "No_match"]  
+
+        # each bacteria is assigned to a bin
+        bin_nr = np.digitize(no_matches_phylum_df["Euclidean_distance"], bin_edges) - 1  # subtracting 1 to get index starting from 0
+        #no_matches_phylum_df.loc[:, "bin_nr"] = bin_nr
+        no_matches_phylum_df = no_matches_phylum_df.copy()
+        no_matches_phylum_df["bin_nr"] = bin_nr
+
+
+        # group by bins and downsample
+        downsampled_no_matches_phylum_df = (
+            no_matches_phylum_df.groupby(bin_nr, group_keys=False) # group_keys=False - group labels not added to the output
+            .apply(lambda x: x.sample(frac=downsample_factor) if len(x) > 1 else x) 
+        ) # lambda is a funtion, x - one bin from groupby, sample - randomly selects rows, if it is only 1 row/bacteria, it keeps it
+
+        # Append both "Match" and downsampled "No_match" bacteria
+        downsampled_no_matches.append(pd.concat([matches_phylum_df, downsampled_no_matches_phylum_df]))
+
+    # Combine all phyla into the final df
+    downsampled_df = pd.concat(downsampled_no_matches, ignore_index=True)
+    # downsampled_df contains all matches, but downsampled no_matches
+
+
+
     # Create histogram with stacked bars
-    g = sns.FacetGrid(euclidean_top_phyla_df, col="Phylum", col_order=top_phyla.index, sharey=False,
+    g = sns.FacetGrid(downsampled_df, col="Phylum", col_order=top_phyla.index, sharey=False,
                        col_wrap=3, height=4, aspect=1.2)
     g.map_dataframe(sns.histplot, x="Euclidean_distance", hue="Match_status", hue_order=["No_match", "Match"], 
                     multiple="stack", bins=bin_edges)
@@ -101,7 +142,7 @@ for gene_name in distance_df.index[:3]:
     for ax, phylum in zip(g.axes.flat, top_phyla.index):
         ax.set_title(f"{phylum} (n={top_phyla[phylum]})")
 
-    g.set(xlim=(min_value - 0.001, max_value + 0.001))     
+    g.set(xlim=(global_min - 0.001, global_max + 0.001))    
     plt.subplots_adjust(top=0.85)
 
     # Add title
@@ -111,6 +152,10 @@ for gene_name in distance_df.index[:3]:
     plt.close(g.figure)
 
 pdfFile.close()
+
+# !!!!!!
+# Kolla upp hur vi ska stänga figuren
+# !!!!!!
 
 end_time = time.time()
 total_time = (end_time - start_time)/60
@@ -141,7 +186,7 @@ for gene_name, kmer_dist in gene_dictionary.items():
     })
 
     # match, no match
-    matching_df = taxonomy_results_df[taxonomy_results_df.iloc[:,0] == gene_name]   # Takes out the information for specific gene
+    matching_df = taxonomy_df[taxonomy_df.iloc[:,0] == gene_name]   # Takes out the information for specific gene
     match_column = []
     for bacteria in euclidean_df['Bacteria_ID']:
         if bacteria in matching_df.iloc[:, 1].values:

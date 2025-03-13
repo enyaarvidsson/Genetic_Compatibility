@@ -45,6 +45,7 @@ genomes_distributions = {bacteria_id: genome_dictionary[bacteria_id] for bacteri
 gene_df = pd.DataFrame(list(gene_distribution.items()), columns=["kmer", f"{gene_name}"])
 gene_df.set_index("kmer", inplace=True) # inplace=True - modifies the gene_df instead of creating a new one
 genomes_df = pd.DataFrame.from_dict(genomes_distributions, orient="index").T
+genomes_df.fillna(0, inplace=True) # fill the NaN values with 0
 
 # Join gene with genomes
 distributions_df = gene_df.join(genomes_df, how="outer") # .join - joins based on the indexes, "outer" - takes all the kmers from both df

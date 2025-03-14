@@ -10,7 +10,7 @@ with open ("/storage/enyaa/REVISED/KMER/gene_dist/gene_kmer_distributions.pkl", 
 genes_df = pd.DataFrame.from_dict(gene_dictionary, orient="index").T
 
 euclidean_list_df = []
-for i in range(1,3): # start at first nr, end before second nr
+for i in range(1,17): # start at first nr, end before second nr
     file_path = f"/storage/enyaa/REVISED/KMER/genome_dist/genome_kmer_distributions_{i}.pkl"
     
     with open (file_path, "rb") as file:
@@ -36,4 +36,4 @@ euclidean_df = pd.concat(euclidean_list_df, axis=1)
 print(euclidean_df.head())
 
 # Save 
-euclidean_df.to_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl")
+euclidean_df.to_pickle("/storage/enyaa/REVISED/KMER/euclidean_df_all.pkl")

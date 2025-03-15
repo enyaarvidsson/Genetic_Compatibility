@@ -37,7 +37,7 @@ start_time = time.time() # Starting time
 
 # EUCLIDEAN DISTANCE --------------------------------
 # Load euclidean_df
-euclidean_df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl") # NOT CREATED YET
+euclidean_df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_df_all.pkl") 
     # euclidean_df is a df with gene_name as rows and genome_id as columns, and euclidean distance as values
 
 
@@ -61,11 +61,11 @@ global_max = euclidean_df.max().max() # max x-value
 
 
 # PDF -----------------------------------------------
-pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_3.pdf")
+pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_all.pdf")
 
 
 # FOR EACH GENE_NAME --------------------------------
-for gene_name in sorted(euclidean_df.index)[:3]: # loops through the gene_names in alphabetical order
+for gene_name in sorted(euclidean_df.index): # loops through the gene_names in alphabetical order
     
     # EUCLIDEAN DISTANCE for one gene ---------------
     euclidean_gene_df = pd.DataFrame({
@@ -91,10 +91,12 @@ for gene_name in sorted(euclidean_df.index)[:3]: # loops through the gene_names 
     euclidean_top_phyla_df = euclidean_gene_df[euclidean_gene_df["Phylum"].isin(top_phyla.index)]
 
     # HISTOGRAM
-    nr_bins = 20
-    #bin_edges = np.linspace(global_min, global_max, nr_bins + 1)
-    min_value, max_value = euclidean_top_phyla_df["Euclidean_distance"].min(), euclidean_top_phyla_df["Euclidean_distance"].max()
-    bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
+    nr_bins = 30
+    bin_edges = np.linspace(global_min, global_max, nr_bins + 1)
+    #min_value = euclidean_top_phyla_df["Euclidean_distance"].min()
+    #max_value = euclidean_top_phyla_df["Euclidean_distance"].max() + 0.001 # so all values fall inside the max_value
+    #min_value, max_value = euclidean_top_phyla_df["Euclidean_distance"].min(), euclidean_top_phyla_df["Euclidean_distance"].max()
+    #bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
 
     # DOWNSAMPLE NO_MATCH
@@ -127,9 +129,10 @@ for gene_name in sorted(euclidean_df.index)[:3]: # loops through the gene_names 
     # Combine all phyla into the final df
     downsampled_df = pd.concat(downsampled_no_matches, ignore_index=True)
     # downsampled_df contains all matches, but downsampled no_matches
+    #print(downsampled_df.head(10))
 
-
-
+    phylum_counts = downsampled_df['Phylum'].value_counts()
+    #print(phylum_counts)
     # Create histogram with stacked bars
     g = sns.FacetGrid(downsampled_df, col="Phylum", col_order=top_phyla.index, sharey=False,
                        col_wrap=3, height=4, aspect=1.2)
@@ -139,10 +142,11 @@ for gene_name in sorted(euclidean_df.index)[:3]: # loops through the gene_names 
     g.set_axis_labels("Euclidean Distance", "Number of Bacteria")
 
     # **Use `top_phyla` for setting the subplot titles**
-    for ax, phylum in zip(g.axes.flat, top_phyla.index):
-        ax.set_title(f"{phylum} (n={top_phyla[phylum]})")
-
-    g.set(xlim=(global_min - 0.001, global_max + 0.001))    
+    for ax, phylum in zip(g.axes.flat, phylum_counts.index):
+        ax.set_title(f"{phylum} (n={phylum_counts[phylum]})")
+        
+    g.set(xlim=(global_min - 0.001, global_max + 0.001))
+    
     plt.subplots_adjust(top=0.85)
 
     # Add title
@@ -153,9 +157,6 @@ for gene_name in sorted(euclidean_df.index)[:3]: # loops through the gene_names 
 
 pdfFile.close()
 
-# !!!!!!
-# Kolla upp hur vi ska stänga figuren
-# !!!!!!
 
 end_time = time.time()
 total_time = (end_time - start_time)/60

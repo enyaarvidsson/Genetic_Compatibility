@@ -17,12 +17,17 @@ path = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_li
 full_lineage_df = pd.read_csv(path, sep="\t", header=None)
 full_lineage_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
-phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]]
+phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]] # only the bacteria_id and the respective phylum 
 phylum_euclidean_df = euclidean_df.merge(phylum_mapping, left_on="Bacteria_ID", right_on="Bacteria_ID")
+    # phylum_euclidean_df - genes, genomes, phylum
 
 # Calculate mean and standard deviation for each phylum and gene
-phylum_stats = phylum_euclidean_df.groupby(["index", "Phylum"])["Euclidean_Distance"].agg(['mean', 'std']).unstack()
+phylum_stats = phylum_euclidean_df.groupby(["index", "Phylum"])["Euclidean_Distance"].agg(['mean', 'std']).fillna(0)
+phylum_stats_reset = phylum_stats.reset_index()
+phylum_stats_reset.rename(columns={'index': 'Gene_name'}, inplace=True)
+    # has the genes as rows, and shows mean and std for each phylum
 
+print(phylum_stats_reset.head(10))
 # Count number of matches for each gene in each phylum
 taxonomy_df = pd.read_csv("/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_all.csv", header=None) # create a pandas dataframe
 taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"] # add column names
@@ -30,21 +35,29 @@ taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", 
 phylum_bacteria_counts = taxonomy_df.groupby(["Gene_name", "Phylum"])["Bacteria_ID"].nunique().reset_index()
 phylum_bacteria_counts.columns = ["Gene_name", "Phylum", "Num_matches"] 
 
-phylum_stats_reset = phylum_stats.reset_index()
-big_table_df = pd.merge(phylum_stats_reset, phylum_bacteria_counts, on=["Gene_name", "Phylum"], how="left") # Add num matches 
+print(phylum_bacteria_counts.head(10))
+# !!!!!!!! HÄR BLIR DET FEL !!!!!!!!!!!!! 
+#phylum_stats_reset = phylum_stats.reset_index() 
+#big_table_df = pd.merge(phylum_stats_reset, phylum_bacteria_counts, on=["Gene_name", "Phylum"], how="left") # Add num matches 
 
+# BYT TILL how='left' NÄR VI HAR euclidean_df-all
+big_table_df = phylum_stats_reset.merge(phylum_bacteria_counts, on=["Gene_name", "Phylum"], how="inner")
+
+print(big_table_df.head(10))
 # Filter for the top phyla
 phylum_total_counts = phylum_bacteria_counts.groupby("Phylum")["Num_matches"].sum().reset_index()
+print(phylum_total_counts)
 top_phyla = phylum_total_counts.sort_values(by="Num_matches", ascending=False).head(6)["Phylum"]
 
 big_table_df = big_table_df[big_table_df["Phylum"].isin(top_phyla)]
-
+print(big_table_df.head(10))
+'''
 # Save big_table_df as csv
 save_path = "/storage/enyaa/REVISED/KMER/big_table.csv"
 big_table_df.to_csv(save_path, index=False)
-
+'''
 # Create scatterplot
-
+'''
 plt.figure(figsize=(8,6))
 #sns.scatterplot(data=bacillota_df, x="Unique_Bacteria_Count", y="mean", alpha=0.7)
 
@@ -64,12 +77,14 @@ plt.xlim(-100, 800)
 # Save plot
 plt.savefig("/home/jolunds/newtest/scatterplot_1.png")
 plt.close()
-
+'''
 
 end_time = time.time()
 total_time = (end_time - start_time)/60
 
 print(f"Done creating big table with elapsed time: {total_time} minutes")
+
+
 '''
 # Read gene dictionary
 with open("/storage/enyaa/REVISED/KMER/gene_dist/gene_kmer_distributions.pkl", "rb") as file: #"rb": read binary

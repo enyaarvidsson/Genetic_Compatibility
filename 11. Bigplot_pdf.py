@@ -3,11 +3,10 @@
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
-import numpy as np
+import numpy as np 
 import seaborn as sns
 import time
 import os
-
 
 
 start_time = time.time() # Starting time
@@ -27,7 +26,7 @@ full_taxonomy_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order",
 
 
 # PDF -----------------------------------------------
-pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_3_all.pdf")
+pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_all.pdf")
 
 
 # FOR EACH GENE_NAME --------------------------------
@@ -39,7 +38,12 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
 
     # EUCLIDEAN DISTANCE for one gene ---------------
     euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl") 
-    euclidean_gene_df = euclidean_gene_df.melt(var_name="Bacteria_ID", value_name="Euclidean_distance")
+    #euclidean_gene_df = euclidean_gene_df.melt(var_name="Bacteria_ID", value_name="Euclidean_distance")
+    # instead of melt - to make it faster:
+    data = euclidean_gene_df.to_numpy()
+    bacteria_ids = np.tile(euclidean_gene_df.columns, data.shape[0])
+    euclidean_values = data.ravel()
+    euclidean_gene_df = pd.DataFrame({"Bacteria_ID": bacteria_ids, "Euclidean_distance": euclidean_values})
         # euclidean_gene_df - has one column Bacteria_ID with the bacteria_ids, and one column with euclidean distance
         # for gene_name
     

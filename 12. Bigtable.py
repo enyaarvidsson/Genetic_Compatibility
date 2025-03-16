@@ -2,16 +2,14 @@
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+import os
 #import seaborn as sns
-
-############ ALLA TAXONOMY RESULTS EXISTERAR INTE #########
 
 start_time = time.time()
 
 # Load gene names
 with open("/storage/jolunds/REVISED/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
-    #first_gene = f.readline().strip()
 
 # Load full lineage 
 path = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
@@ -20,7 +18,7 @@ full_lineage_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", 
 
 phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]] # only the bacteria_id and the respective phylum 
 
-# Find for top phylum
+# Find 6 top phylum
 top_phyla = phylum_mapping.groupby('Phylum').size().sort_values(ascending=False).head(6)
 ##### FÅR EJ SAMMA TOP PHYLA SOM I BIGPLOT 
     # Chloroflexota  ist för Spirochaetota
@@ -51,19 +49,23 @@ for gene_name in sorted(all_genes):
         # has the genes as rows, and shows mean and std for each phylum
     
     # Load taxonomy results and count matches
-    taxonomy_df = pd.read_csv(f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv")
-    taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
-    phylum_counts = taxonomy_df.groupby('Phylum').size().reset_index(name="Num_matches")
+    taxonomy_file = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv"
+    if os.path.exists(taxonomy_file):
+        taxonomy_df = pd.read_csv(taxonomy_file)
+        taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+        phylum_counts = taxonomy_df.groupby('Phylum').size().reset_index(name="Num_matches")
+    else: # If taxonomy file do not exist
+        phylum_counts = pd.DataFrame({"Phylum": top_phyla.index.tolist(), "Num_matches": [0] * len(top_phyla)})
     
     # Merge stats and num matches
     gene_table_df = pd.merge(phylum_stats_reset, phylum_counts, on=["Phylum"], how="left").fillna(0) # Add num matches 
     
     # Changes for the eye
-    gene_table_df.insert(0, 'Gene_name', gene_name)
-    gene_table_df.rename(columns={'mean': 'Mean', 'std': 'Std'}, inplace=True)
-    gene_table_df['Num_matches'] = gene_table_df['Num_matches'].astype(int)
-    gene_table_df['Phylum'] = pd.Categorical(gene_table_df['Phylum'], categories=top_phyla.index, ordered=True)
-    gene_table_df = gene_table_df.sort_values('Phylum')
+    gene_table_df.insert(0, 'Gene_name', gene_name) # Add gene name column
+    gene_table_df.rename(columns={'mean': 'Mean', 'std': 'Std'}, inplace=True) # Capitalise mean and std
+    gene_table_df['Num_matches'] = gene_table_df['Num_matches'].astype(int) # Make num matches integers
+    gene_table_df['Phylum'] = pd.Categorical(gene_table_df['Phylum'], categories=top_phyla.index, ordered=True) 
+    gene_table_df = gene_table_df.sort_values('Phylum') # Sort phylum from largest to smallest
     
     # Append results
     big_table_list.append(gene_table_df)
@@ -72,8 +74,13 @@ for gene_name in sorted(all_genes):
 big_table_df = pd.concat(big_table_list).reset_index(drop=True)
 
 # Save
-save_path = "/storage/enyaa/REVISED/KMER/big_table.csv"
+save_path = "/storage/jolunds/REVISED/big_table.csv"
 big_table_df.to_csv(save_path, index=False)
+
+end_time = time.time()
+total_time = (end_time - start_time)/60
+
+print(f"Done creating big table with elapsed time: {total_time} minutes")
 
 '''
 # Create scatterplot
@@ -90,7 +97,6 @@ total_time = (end_time - start_time)/60
 
 print(f"Done creating big table and scatterplot with elapsed time: {total_time} minutes")
 '''
-
 
 # GAMMAL VERSION:
 '''

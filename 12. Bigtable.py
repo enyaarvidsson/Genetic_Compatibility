@@ -25,7 +25,7 @@ top_phyla = phylum_mapping.groupby('Phylum').size().sort_values(ascending=False)
 
 # Loop through genes in all_genes 
 big_table_list = []   
-for gene_name in all_genes[8:10]: #sorted(all_genes): 
+for gene_name in sorted(all_genes): 
     
     if "/" in gene_name: # Just for look-up
         gene_name = gene_name.replace("/", "?")
@@ -74,8 +74,13 @@ for gene_name in all_genes[8:10]: #sorted(all_genes):
 big_table_df = pd.concat(big_table_list).reset_index(drop=True)
 
 # Save
-save_path = "/storage/enyaa/REVISED/KMER/big_table.csv"
+save_path = "/storage/jolunds/REVISED/big_table.csv"
 big_table_df.to_csv(save_path, index=False)
+
+end_time = time.time()
+total_time = (end_time - start_time)/60
+
+print(f"Done creating big table with elapsed time: {total_time} minutes")
 
 '''
 # Create scatterplot

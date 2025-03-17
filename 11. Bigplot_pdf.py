@@ -26,11 +26,11 @@ full_taxonomy_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order",
 
 
 # PDF -----------------------------------------------
-pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_all.pdf")
+pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot.pdf")
 
 
 # FOR EACH GENE_NAME --------------------------------
-for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in alphabetical order
+for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names in alphabetical order
 #for gene_name in sorted(euclidean_df.index): # loops through the gene_names in alphabetical order
     
     if "/" in gene_name:
@@ -44,6 +44,7 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
     bacteria_ids = np.tile(euclidean_gene_df.columns, data.shape[0])
     euclidean_values = data.ravel()
     euclidean_gene_df = pd.DataFrame({"Bacteria_ID": bacteria_ids, "Euclidean_distance": euclidean_values})
+    
         # euclidean_gene_df - has one column Bacteria_ID with the bacteria_ids, and one column with euclidean distance
         # for gene_name
     
@@ -60,14 +61,18 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
     #print(taxonomy_gene_df)
 
     # Find matching bacteria for this gene
+    # !!!!!!!!!!!!!!! kolla unika bacteria_id !!!!!!!!!!!!!!!!
     matching_df = taxonomy_gene_df[['Bacteria_ID']] # bacteria_ids that has matched with the gene
     #matching_df = taxonomy_df[taxonomy_df["Gene_name"] == gene_name][["Bacteria_ID"]] # takes the matching bacteria_id, so we will have the bacteria_id that the gene_name matches with
-
+    print(len(matching_df))
+    print(matching_df['Bacteria_ID'].nunique())
+    
     # Add match status column using merge
     euclidean_gene_df = euclidean_gene_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
+    
     euclidean_gene_df["Match_status"] = euclidean_gene_df["Match_status"].fillna("No_match")
         # euclidean_gene_df - has Bacteria_ID, Euclidean_distance and Match_status columns
-
+    #print(len(euclidean_gene_df))
     # ADD PHYLUM (from full taxonomy) ---------------
     # Merge with full taxonomy to get Phylum information
     euclidean_gene_df = euclidean_gene_df.merge(full_taxonomy_df[["Bacteria_ID", "Phylum"]], on="Bacteria_ID", how="left")
@@ -79,7 +84,7 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
     euclidean_top_phyla_df = euclidean_gene_df[euclidean_gene_df["Phylum"].isin(top_phyla.index)]
         # euclidean_top_phyla_df - has only the top 6 phyla - for each gene
     #print(euclidean_top_phyla_df)
-
+    #print(top_phyla)
     # BINS FOR THE HISTOGRAM ------------------------
     nr_bins = 30
     #bin_edges = np.linspace(global_min, global_max, nr_bins + 1)
@@ -121,7 +126,8 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
 
     # COUNT NR OF BACTERIA --------------------------
     # in each phylum
-    phylum_counts = downsampled_df['Phylum'].value_counts() 
+    phylum_counts = downsampled_df['Phylum'].value_counts() # Sorter utifrån top_phyla 
+    phylum_counts = phylum_counts.reindex(top_phyla.index)
     #print(phylum_counts)
 
     # HISTOGRAM -------------------------------------
@@ -157,6 +163,5 @@ pdfFile.close()
 end_time = time.time()
 total_time = (end_time - start_time)/60
 print(f"Bigplot_pdf created in: {total_time} minutes")
-
 
 

@@ -20,7 +20,7 @@ phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]] # only the bacteria_
 
 # Loop through genes in all_genes 
 big_table_list = []   
-for gene_name in all_genes[:3]: #sorted(all_genes): 
+for gene_name in sorted(all_genes): 
     
     if "/" in gene_name: # Just for look-up
         gene_name = gene_name.replace("/", "?")
@@ -74,11 +74,10 @@ for gene_name in all_genes[:3]: #sorted(all_genes):
 
 # Concat
 big_table_df = pd.concat(big_table_list).reset_index(drop=True)
-print(big_table_df.head(10))
 
 # Save
 save_path = "/storage/jolunds/REVISED/big_table.csv"
-##big_table_df.to_csv(save_path, index=False)
+big_table_df.to_csv(save_path, index=False)
 
 end_time = time.time()
 total_time = (end_time - start_time)/60

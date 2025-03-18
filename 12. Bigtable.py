@@ -3,6 +3,7 @@ import pandas as pd
 import time
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 #import seaborn as sns
 
 start_time = time.time()
@@ -15,18 +16,11 @@ with open("/storage/jolunds/REVISED/gene_names.txt", "r") as f:
 path = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
 full_lineage_df = pd.read_csv(path, sep="\t", header=None)
 full_lineage_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
-
 phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]] # only the bacteria_id and the respective phylum 
-
-###### TA INTE UT FRÅN FULL LINEAGE######
-# Find 6 top phylum
-top_phyla = phylum_mapping.groupby('Phylum').size().sort_values(ascending=False).head(6)
-##### FÅR EJ SAMMA TOP PHYLA SOM I BIGPLOT 
-    # Chloroflexota  ist för Spirochaetota
 
 # Loop through genes in all_genes 
 big_table_list = []   
-for gene_name in sorted(all_genes): 
+for gene_name in all_genes[:3]: #sorted(all_genes): 
     
     if "/" in gene_name: # Just for look-up
         gene_name = gene_name.replace("/", "?")
@@ -36,14 +30,19 @@ for gene_name in sorted(all_genes):
     
     # Switch to long format 
     ############## kör inte på melt ############
-    gene_euclidean_df = gene_euclidean_df.melt(ignore_index=False, var_name="Bacteria_ID", value_name="Euclidean_distance").reset_index()
+    #gene_euclidean_df = gene_euclidean_df.melt(ignore_index=False, var_name="Bacteria_ID", value_name="Euclidean_distance").reset_index()
+    data = gene_euclidean_df.to_numpy()
+    bacteria_ids = np.tile(gene_euclidean_df.columns, data.shape[0])
+    euclidean_values = data.ravel()
+    euclidean_gene_df = pd.DataFrame({"Bacteria_ID": bacteria_ids, "Euclidean_distance": euclidean_values})
     
     # Add phylum column
-    phylum_euclidean_df = gene_euclidean_df.merge(phylum_mapping, on=['Bacteria_ID'], how='inner')
+    phylum_euclidean_df = euclidean_gene_df.merge(phylum_mapping, on=['Bacteria_ID'], how='inner')
     phylum_euclidean_df.rename(columns={'index': 'Gene_name'})
     
-    # Filter for top phyla
-    phylum_euclidean_df = phylum_euclidean_df[phylum_euclidean_df['Phylum'].isin(top_phyla.index.tolist())]
+    # # Find 6 top phylum & filter for top phyla
+    top_phyla = phylum_euclidean_df["Phylum"].value_counts().head(6)
+    phylum_euclidean_df = phylum_euclidean_df[phylum_euclidean_df['Phylum'].isin(top_phyla.index)]
     
     # Calculate mean and standard deviation for each phylum and gene
     phylum_stats = phylum_euclidean_df.groupby(["Phylum"])["Euclidean_distance"].agg(['mean', 'std']).fillna(0)
@@ -55,7 +54,8 @@ for gene_name in sorted(all_genes):
     if os.path.exists(taxonomy_file):
         taxonomy_df = pd.read_csv(taxonomy_file)
         taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
-        phylum_counts = taxonomy_df.groupby('Phylum').size().reset_index(name="Num_matches")
+        taxonomy_df = taxonomy_df.drop_duplicates() # Remove duplicates (when we have multiple matches in one genome)
+        phylum_counts = taxonomy_df.groupby('Phylum').size().reset_index(name="Num_matches") # Count num matches in each phylum
     else: # If taxonomy file do not exist
         phylum_counts = pd.DataFrame({"Phylum": top_phyla.index.tolist(), "Num_matches": [0] * len(top_phyla)})
     
@@ -74,10 +74,11 @@ for gene_name in sorted(all_genes):
 
 # Concat
 big_table_df = pd.concat(big_table_list).reset_index(drop=True)
+print(big_table_df.head(10))
 
 # Save
 save_path = "/storage/jolunds/REVISED/big_table.csv"
-big_table_df.to_csv(save_path, index=False)
+##big_table_df.to_csv(save_path, index=False)
 
 end_time = time.time()
 total_time = (end_time - start_time)/60

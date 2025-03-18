@@ -18,6 +18,7 @@ full_lineage_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", 
 
 phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]] # only the bacteria_id and the respective phylum 
 
+###### TA INTE UT FRÅN FULL LINEAGE######
 # Find 6 top phylum
 top_phyla = phylum_mapping.groupby('Phylum').size().sort_values(ascending=False).head(6)
 ##### FÅR EJ SAMMA TOP PHYLA SOM I BIGPLOT 
@@ -34,6 +35,7 @@ for gene_name in sorted(all_genes):
     gene_euclidean_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
     
     # Switch to long format 
+    ############## kör inte på melt ############
     gene_euclidean_df = gene_euclidean_df.melt(ignore_index=False, var_name="Bacteria_ID", value_name="Euclidean_distance").reset_index()
     
     # Add phylum column

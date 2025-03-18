@@ -1,43 +1,55 @@
 # 3. Taxonomy
 
 import pandas as pd
-
-# Get the gene IDs and bacteria IDs from the BLAST results
-with open("/storage/enyaa/REVISED/BLAST/BLAST_RESULTS/blast_results_16.txt") as f: # opens the file for reading, stores in f
-    lines = f.readlines() # reads the lines in the file and stores them in a list "lines"
-
-gene_header = [line.split("\t")[0] for line in lines]
-gene_name = [line.split("|")[5] for line in gene_header] # Takes gene names
-
-unique_gene_count = len(set(gene_name))
-#print(unique_gene_count)
+import time
 
 
-bacteria_id_seq = [line.split("\t")[1] for line in lines] # Takes the ID for the sequences in the bacterial genomes
-bacteria_id = [line.split("|")[0] for line in bacteria_id_seq] # Removes sequence ID, so we just have bacteria IDs
+start_time = time.time()
 
-#print(len(bacteria_id))
+for i in range(1,17):
+    # Get the gene IDs and bacteria IDs from the BLAST results
+    with open(f"/storage/enyaa/REVISED/BLAST/BLAST_RESULTS/blast_results_{i}.txt") as f: # opens the file for reading, stores in f
+        lines = f.readlines() # reads the lines in the file and stores them in a list "lines"
 
-# Read taxonomy file
-taxonomy_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
-taxonomy_df = pd.read_csv(taxonomy_file, sep="\t", header=None) 
-taxonomy_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+    gene_header = [line.split("\t")[0] for line in lines]
+    gene_name = [line.split("|")[5] for line in gene_header] # Takes gene names
 
-blast_results_df = pd.DataFrame({
-    "Gene_name": gene_name,
-    "Bacteria_ID": bacteria_id
-})
-merged_df = pd.merge(blast_results_df, taxonomy_df, on="Bacteria_ID", how="left")
-
-#merged_df = pd.merge(blast_results_df, matching_rows, left_on="Bacteria_ID", how="left")
-
-print(merged_df.head())
-print(len(merged_df))
+    unique_gene_count = len(set(gene_name))
+    #print(unique_gene_count)
 
 
-# Store results
-store_results = "/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_16.csv"
-merged_df.to_csv(store_results, index=False, header=False) # Creates file with the results
+    bacteria_id_seq = [line.split("\t")[1] for line in lines] # Takes the ID for the sequences in the bacterial genomes
+    bacteria_id = [line.split("|")[0] for line in bacteria_id_seq] # Removes sequence ID, so we just have bacteria IDs
+
+    #print(len(bacteria_id))
+
+    # Read taxonomy file
+    taxonomy_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
+    taxonomy_df = pd.read_csv(taxonomy_file, sep="\t", header=None) 
+    taxonomy_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+
+    blast_results_df = pd.DataFrame({
+        "Gene_name": gene_name,
+        "Bacteria_ID": bacteria_id
+    })
+    merged_df = pd.merge(blast_results_df, taxonomy_df, on="Bacteria_ID", how="left")
+
+    #merged_df = pd.merge(blast_results_df, matching_rows, left_on="Bacteria_ID", how="left")
+
+    #print(merged_df.head())
+    #print(len(merged_df))
+
+
+    # Store results
+    store_results = f"/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_{i}.csv"
+    merged_df.to_csv(store_results, index=False, header=False) # Creates file with the results
+
+    print(f"Taxonomy_results_{i} created ...")
+
+end_time = time.time()
+total_time = (end_time -start_time)/60
+
+print(f"Done creating taxonomy_results with elapsed time {total_time} minutes")
 
 
 '''

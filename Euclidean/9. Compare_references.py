@@ -6,8 +6,10 @@ import seaborn as sns
 from scipy.spatial.distance import euclidean
 import random
 import numpy as np
+import os
+from scipy.stats import mannwhitneyu
 
-# COMPATIBLE -------------------------------------
+# COMPATIBLE --------------------------------------------
 with open("/storage/jolunds/card.json", "r") as file:
     card_info = json.load(file)
 
@@ -20,57 +22,60 @@ for key, value in card_info.items():
         # Check if 'model_name' exists in the value 
         if isinstance(value, dict) and 'model_name' in value:
            chromosomal_genes.append(value['model_name'])
-        
-#print(len(chromosomal_genes)) #995
 
 # Load mobility
-path = "/storage/enyaa/REVISED/mobility_classification_all.csv"
+path = "/storage/enyaa/REVISED/mobility_classification_all_wrong.csv"
 mobility_df = pd.read_csv(path, sep=",")
 
 # Filter for the chromosomal genes
 chromosomal_df = mobility_df[mobility_df['Gene_name'].isin(chromosomal_genes)]
-#print(len(chromosomal_df))
 
 # Keep only the "not mobile" genes
 not_mobile_df = chromosomal_df[chromosomal_df['Mobility'] == 'Not_mobile']
 
-# Load taxonomy results 1 & 2
-file_path_1 = "/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_1.csv"
-taxonomy_df_1 = pd.read_csv(file_path_1, sep=",", header=None) # create a pandas dataframe
-taxonomy_df_1.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
-file_path_2 = "/storage/enyaa/REVISED/TAXONOMY/taxonomy_results_2.csv"
-taxonomy_df_2 = pd.read_csv(file_path_2, sep=",", header=None) # create a pandas dataframe
-taxonomy_df_2.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+# Loop through taxonomy results
+taxonomy_df_list = []
+for gene in not_mobile_df['Gene_name']:
+    #gene_name = 
+    file_path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene}.csv"
+    if os.path.exists(file_path):
+        taxonomy_df = pd.read_csv(file_path, sep=",", header=None) 
+        taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+        taxonomy_df = taxonomy_df.drop_duplicates()
+        taxonomy_df_list.append(taxonomy_df)
+    else:
+        continue    
+    
+taxonomy_df_all = pd.concat(taxonomy_df_list)
 
-taxonomy_df = pd.concat([taxonomy_df_1, taxonomy_df_2], ignore_index=True) # Merge
+not_mobile_taxonomy = not_mobile_df[['Gene_name']].merge(taxonomy_df_all, on='Gene_name', how='left') #Take 
+gene_counts = not_mobile_taxonomy["Gene_name"].value_counts()
+gene_counts.to_csv("/home/jolunds/newtest/compatible_genes")
+keep_gene_counts = gene_counts[gene_counts >= 5].index # Remove genes with count lower than 5
+print(len(keep_gene_counts))
+compatible_df = not_mobile_taxonomy[not_mobile_taxonomy["Gene_name"].isin(keep_gene_counts)]
+#print(len(compatible_df))
 
-not_mobile_taxonomy = not_mobile_df[['Gene_name']].merge(taxonomy_df, on='Gene_name', how='left') #Take 
-
-compatible_df = not_mobile_taxonomy[['Gene_name', 'Bacteria_ID']] # Keep only gene name and bacteria id
 
 # Load euclidean df
-#euclidean_df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_df.pkl") # NOT CREATED YET
-euclidean_df = pd.read_pickle("/storage/jolunds/euclidean_df.pkl") 
+euclidean_df_list = []
+for gene in compatible_df['Gene_name'].unique():
+    file_path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene}.pkl"
+    gene_euclidean_df = pd.read_pickle(file_path).T.reset_index()
+    gene_euclidean_df.insert(0, 'Gene_name', gene)# Add gene name column
+    gene_euclidean_df.rename(columns={'index': 'Bacteria_ID', f'{gene}': 'Euclidean_distance'}, inplace=True)
 
-comp_euclidean_df = []  # Initialize an empty list to store results
-for _, row in compatible_df.iterrows():
-    gene = row['Gene_name']
-    bacteria_id = row['Bacteria_ID']
-    
-    # Get the Euclidean distance from euclidean_df
-    if gene in euclidean_df.index and bacteria_id in euclidean_df.columns:
-        euclidean_distance = euclidean_df.at[gene, bacteria_id]
-    else:
-        euclidean_distance = None  # In case there's no matching entry
-    
-    # Append the results (gene, bacteria_id, and Euclidean distance) to the list
-    comp_euclidean_df.append([gene, bacteria_id, euclidean_distance])
+    bacteria_ids = compatible_df[compatible_df['Gene_name'] == gene]['Bacteria_ID']
+    gene_euclidean_df = gene_euclidean_df[gene_euclidean_df['Bacteria_ID'].isin(bacteria_ids)]
+    euclidean_df_list.append(gene_euclidean_df)
 
-# Convert the list to a DataFrame for better readability
-comp_euclidean_df = pd.DataFrame(comp_euclidean_df, columns=['Gene_name', 'Bacteria_ID', 'Euclidean_distance'])
+comp_euclidean_df = pd.concat(euclidean_df_list).reset_index(drop=True)
 comp_euclidean_df['Reference'] = 'Compatible' # Add 'Compatible'
 
-# INCOMPATIBLE ----------
+print(comp_euclidean_df.head())
+print(len(comp_euclidean_df))
+
+# INCOMPATIBLE ------------------------
 gram_positive_genera = ["Clostridium", "Bacillus", "Clostridioides", "Listeria", "Staphylococcus", "Enterococcus", "Lactobacillus", "Leuconostoc",
                         "Streptococcus"]
 
@@ -80,48 +85,65 @@ full_lineage_df = pd.read_csv(path, sep="\t", header=None)
 full_lineage_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
 gram_positive_bacteria = full_lineage_df[full_lineage_df["Genus"].isin(gram_positive_genera)]
-incomp_bacteria_id = gram_positive_bacteria["Bacteria_ID"]
+incomp_bacteria_id = list(gram_positive_bacteria["Bacteria_ID"])
 
+random.seed(42)
+incomp_bacteria_id = random.sample(incomp_bacteria_id, k=700)
 incomp_gene_names = ["NDM", "IMP", "GIM", "SPM", "VIM"] #Metallo betalaktamases 
 
-incomp_euclidean = []
-for idx, row in euclidean_df.iterrows():
-    gene = str(idx).strip()  # Ensure it's a string and strip whitespace
-    if any(gene.startswith(prefix) for prefix in incomp_gene_names):
-        # If the condition is met, append the row to incomp_euclidean
-        incomp_euclidean.append(row)
- 
-# Convert the filtered rows to a DataFrame
-temp_incomp_euclidean_df = pd.DataFrame(incomp_euclidean)
+# Ladda gene namn
+with open("/storage/jolunds/REVISED/gene_names.txt", "r") as f:
+    all_genes = [line.strip() for line in f]
 
-valid_columns = [id for id in incomp_bacteria_id if id in temp_incomp_euclidean_df.columns]
+incomp_genes = [gene for gene in all_genes if any(gene.startswith(prefix) for prefix in incomp_gene_names)]
+random.seed(50)
+incomp_genes = random.sample(incomp_genes, k=120)
+print(len(incomp_genes))
 
-# Filter so only 80 genomes left
-filtered_df = temp_incomp_euclidean_df[valid_columns]
-random_bacteria_ids = np.random.choice(filtered_df.columns, size=100, replace=False)
-filtered_100_df = filtered_df[random_bacteria_ids]
-
-print(len(filtered_100_df.columns))
-# Filter so we only take 150 genes
-random.seed(42)
-random_incomp_genes = random.sample(list(temp_incomp_euclidean_df.index), 150)
-
-incomp_euclidean_df = filtered_100_df.loc[random_incomp_genes]
-incomp_euclidean_df = incomp_euclidean_df.reset_index().melt(id_vars=["index"], var_name="Bacteria_ID", value_name="Euclidean_distance")
-incomp_euclidean_df.rename(columns={'index': 'Gene_name'}, inplace=True)
+# Loopa gennamn, filtera på bacteria id incomp_bacteria_id
+incomp_euclidean_list = []
+for gene in incomp_genes:
+    file_path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene}.pkl"
+    gene_euclidean_df = pd.read_pickle(file_path).T.reset_index()
+    gene_euclidean_df.insert(0, 'Gene_name', gene)# Add gene name column
+    gene_euclidean_df.rename(columns={'index': 'Bacteria_ID', f'{gene}': 'Euclidean_distance'}, inplace=True)
+    
+    gene_euclidean_df = gene_euclidean_df[gene_euclidean_df['Bacteria_ID'].isin(incomp_bacteria_id)]
+    
+    #append
+    incomp_euclidean_list.append(gene_euclidean_df)
+    
+incomp_euclidean_df = pd.concat(incomp_euclidean_list).reset_index(drop=True)
 incomp_euclidean_df['Reference'] = 'Incompatible'
 
+print(incomp_euclidean_df.head())
 print(len(incomp_euclidean_df))
+
+###### WILCOXON
+
+group1 = list(comp_euclidean_df['Euclidean_distance'])
+group2 = list(incomp_euclidean_df['Euclidean_distance'])
+
+print(group1[:10])
+print(group2[:10])
+
+# Perform a one-sided Mann-Whitney U test (alternative='less' tests if group1 < group2)
+stat, p_value = mannwhitneyu(group1, group2, alternative='less')  # Test if group1 has smaller values
+
+print(f"Statistic: {stat}, P-value: {p_value}")
 
 # Combine incomp and comp
 reference_euclidean_df = pd.concat([comp_euclidean_df, incomp_euclidean_df], ignore_index=True)
+reference_euclidean_df = reference_euclidean_df.sort_values(by='Euclidean_distance').reset_index(drop=True)
 
+reference_euclidean_df.to_csv("/home/jolunds/newtest/reference_euclidean_df.csv")
 # Plot results
 plt.figure(figsize=(10, 6))
-sns.histplot(data=reference_euclidean_df, x='Euclidean_distance', hue='Reference', multiple='stack', bins=20)
+sns.histplot(data=reference_euclidean_df, x='Euclidean_distance', hue='Reference', multiple='stack', bins=30)
 
 plt.xlabel("Euclidean distance")
 plt.ylabel("Number of bacteria")
+plt.title(f"p={p_value}")
 
 #plt.savefig("/home/enyaa/gene_genome/histogram_references.png")
 plt.savefig("/home/jolunds/newtest/histogram_references.png")
@@ -191,5 +213,45 @@ plt.title("")
 
 plt.savefig("/home/jolunds/newtest/compatible_references.png")
 plt.close()
+
+
+comp_euclidean_df = []  # Initialize an empty list to store results
+for _, row in compatible_df.iterrows():
+    gene = row['Gene_name']
+    bacteria_id = row['Bacteria_ID']
+    
+    # Get the Euclidean distance from euclidean_df
+    if gene in euclidean_df.index and bacteria_id in euclidean_df.columns:
+        euclidean_distance = euclidean_df.at[gene, bacteria_id]
+    else:
+        euclidean_distance = None  # In case there's no matching entry
+    
+    # Append the results (gene, bacteria_id, and Euclidean distance) to the list
+    comp_euclidean_df.append([gene, bacteria_id, euclidean_distance])
+
+# Convert the list to a DataFrame for better readability
+comp_euclidean_df = pd.DataFrame(comp_euclidean_df, columns=['Gene_name', 'Bacteria_ID', 'Euclidean_distance'])
+
+# Convert the filtered rows to a DataFrame
+temp_incomp_euclidean_df = pd.DataFrame(incomp_euclidean)
+
+valid_columns = [id for id in incomp_bacteria_id if id in temp_incomp_euclidean_df.columns]
+
+# Filter so only 80 genomes left
+filtered_df = temp_incomp_euclidean_df[valid_columns]
+random_bacteria_ids = np.random.choice(filtered_df.columns, size=100, replace=False)
+filtered_100_df = filtered_df[random_bacteria_ids]
+
+print(len(filtered_100_df.columns))
+# Filter so we only take 150 genes
+random.seed(42)
+random_incomp_genes = random.sample(list(temp_incomp_euclidean_df.index), 150)
+
+incomp_euclidean_df = filtered_100_df.loc[random_incomp_genes]
+incomp_euclidean_df = incomp_euclidean_df.reset_index().melt(id_vars=["index"], var_name="Bacteria_ID", value_name="Euclidean_distance")
+incomp_euclidean_df.rename(columns={'index': 'Gene_name'}, inplace=True)
+
+
+print(len(incomp_euclidean_df))
 
 '''

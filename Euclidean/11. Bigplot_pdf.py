@@ -44,35 +44,34 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
     bacteria_ids = np.tile(euclidean_gene_df.columns, data.shape[0])
     euclidean_values = data.ravel()
     euclidean_gene_df = pd.DataFrame({"Bacteria_ID": bacteria_ids, "Euclidean_distance": euclidean_values})
-    
         # euclidean_gene_df - has one column Bacteria_ID with the bacteria_ids, and one column with euclidean distance
         # for gene_name
+    #print(len(euclidean_gene_df))
     
     # MATCH STATUS (from taxonomy) ------------------
     # Load Taxonomy results
     path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
     
-    # Check if file exists before reading
-    if not os.path.exists(path):
-        print(f"File not found: {path}, skipping...")
-        continue  # Skip to the next gene_name
+    if os.path.exists(path):
+        taxonomy_gene_df = pd.read_csv(path, sep=",")
 
-    taxonomy_gene_df = pd.read_csv(path, sep=",")
-    #print(taxonomy_gene_df)
+        # Find matching bacteria for this gene
+        matching_df = taxonomy_gene_df[['Bacteria_ID']].drop_duplicates() # bacteria_ids that has matched with the gene - UNIQUE
+        #matching_df = taxonomy_df[taxonomy_df["Gene_name"] == gene_name][["Bacteria_ID"]] # takes the matching bacteria_id, so we will have the bacteria_id that the gene_name matches with
+        #print(len(matching_df))
+        #print(matching_df['Bacteria_ID'].nunique())
+        
+    else: # if taxonomy file doesn't exist - there are no matches for the gene
+        matching_df = pd.DataFrame(columns=["Bacteria_ID"]) # create an empty matching_df
+        print(f"File not found: {path}")
 
-    # Find matching bacteria for this gene
-    # !!!!!!!!!!!!!!! kolla unika bacteria_id !!!!!!!!!!!!!!!!
-    matching_df = taxonomy_gene_df[['Bacteria_ID']] # bacteria_ids that has matched with the gene
-    #matching_df = taxonomy_df[taxonomy_df["Gene_name"] == gene_name][["Bacteria_ID"]] # takes the matching bacteria_id, so we will have the bacteria_id that the gene_name matches with
-    print(len(matching_df))
-    print(matching_df['Bacteria_ID'].nunique())
-    
     # Add match status column using merge
     euclidean_gene_df = euclidean_gene_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
     
     euclidean_gene_df["Match_status"] = euclidean_gene_df["Match_status"].fillna("No_match")
         # euclidean_gene_df - has Bacteria_ID, Euclidean_distance and Match_status columns
     #print(len(euclidean_gene_df))
+
     # ADD PHYLUM (from full taxonomy) ---------------
     # Merge with full taxonomy to get Phylum information
     euclidean_gene_df = euclidean_gene_df.merge(full_taxonomy_df[["Bacteria_ID", "Phylum"]], on="Bacteria_ID", how="left")
@@ -126,13 +125,13 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
 
     # COUNT NR OF BACTERIA --------------------------
     # in each phylum
-    phylum_counts = downsampled_df['Phylum'].value_counts() # Sorter utifrån top_phyla 
-    phylum_counts = phylum_counts.reindex(top_phyla.index)
+    phylum_counts = downsampled_df['Phylum'].value_counts()  
+    phylum_counts = phylum_counts.reindex(top_phyla.index) # In same order as top_phyla
     #print(phylum_counts)
 
     # HISTOGRAM -------------------------------------
     # Create histogram with stacked bars
-    g = sns.FacetGrid(downsampled_df, col="Phylum", col_order=top_phyla.index, sharey=False,
+    g = sns.FacetGrid(downsampled_df, col="Phylum", col_order=phylum_counts.index, sharey=False,
                        col_wrap=3, height=4, aspect=1.2)
     g.map_dataframe(sns.histplot, x="Euclidean_distance", hue="Match_status", hue_order=["No_match", "Match"], 
                     multiple="stack", bins=bin_edges)

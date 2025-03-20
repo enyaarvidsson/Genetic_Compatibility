@@ -4,9 +4,15 @@ import pandas as pd
 import gzip
 from Bio import SeqIO
 import os
+import pickle
+import time
+import matplotlib.pyplot as plt
 
 
 # GC-CONTENT FOR BACTERIA ------------------------------------
+'''
+
+start_time = time.time()
 
 file_paths_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_filepaths.tsv"
 df = pd.read_csv(file_paths_file, sep="\t", header=None) 
@@ -19,13 +25,13 @@ for path in file_paths:
     filename = os.path.basename(path) # gets the filename (not whole filepath) 
     bacteria_id = "_".join(filename.split("_")[:2]) # gets the bacterial ID
 
-    # all sequences in one fasta file:
-    all_sequences = ""  # empty string
+    sequences = [] 
 
     with gzip.open(path, "rt") as handle:
-        for record in SeqIO.parse(handle, "fasta"):
-            all_sequences += str(record.seq)  # merge all sequences in one fasta-file
-
+        sequences = [str(record.seq) for record in SeqIO.parse(handle, "fasta")] # store all sequences in a fasta file, in a list
+    
+    all_sequences = "".join(sequences) # join all sequences    
+        
     # Compute GC-content for the entire dataset
     gc_content = round(gc_fraction(all_sequences) * 100, 2)  # Convert fraction to percentage
 
@@ -33,17 +39,23 @@ for path in file_paths:
 
     results.append([bacteria_id, gc_content])
 
-# Save to csv-file
-output_file = "/storage/enyaa/REVISED/GC/gc_content_bacteria.csv"
+# Save to pickle
 df_output = pd.DataFrame(results, columns=["Bacteria_ID", "GC_content"])
-df_output.to_csv(output_file, index=False)
+output_file = "/storage/enyaa/REVISED/GC/gc_content_bacteria.pkl"
+with open(output_file, "wb") as f:
+    pickle.dump(df_output, f)
 
+
+end_time = time.time()
+total_time = (end_time - start_time)/60
+print(f"Bacteria gc-content file created in: {total_time} minutes")
+'''
 
 
 # GC-CONTENT FOR GENES ---------------------------------------
 '''
 file_path = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"
-output_file = "gc_content_genes.csv"
+output_file = "/storage/enyaa/REVISED/GC/gc_content_genes.pkl"
 
 results = []
 
@@ -60,44 +72,90 @@ for record in SeqIO.parse(file_path, "fasta"):
 
 # Save to CSV
 df_output = pd.DataFrame(results, columns=["Gene_name", "GC_content"])
-df_output.to_csv(output_file, index=False, float_format="%.2f")
+#df_output.to_csv(output_file, index=False, float_format="%.2f")
+with open(output_file, "wb") as f:
+    pickle.dump(df_output, f)
+
+print(f"Saved pickle results to {output_file}")
+'''
+
+# MAKE DF FOR RATIO between genes and genomes ----------------
+'''
+
+# Load the files with GC-content for genes and genomes
+file_bacteria = "/storage/enyaa/REVISED/GC/gc_content_bacteria.pkl"
+file_genes = "/storage/enyaa/REVISED/GC/gc_content_genes.pkl"
+
+with open(file_bacteria, "rb") as f:
+    bacteria_gc_df = pickle.load(f)
+with open(file_genes, "rb") as f:
+    genes_gc_df = pickle.load(f)
+
+# Ratio between gene GC content and bacteria GC content (gene/bacteria)
+for gene in genes_gc_df.itertuples():
+    gene_name = gene.Gene_name
+    gene_gc = gene.GC_content
+
+    # Create df for current gene (values = NaN)
+    gene_df = pd.DataFrame(index=[gene_name], columns=bacteria_gc_df['Bacteria_ID'])
+    gene_df.columns.name = None # take away the label "Bacteria_ID"
+
+    for bacteria in bacteria_gc_df.itertuples():
+        bacteria_id = bacteria.Bacteria_ID
+        bacteria_gc = bacteria.GC_content
+
+        # Calculate the ratio
+        ratio = gene_gc / bacteria_gc
+
+        # Store the ratio in the result DataFrame
+        gene_df.at[gene_name, bacteria_id] = ratio
+
+    # Save result to pickle - one for each gene
+    output_dir = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes"
+
+    if "/" in gene_name:
+        gene_name = gene_name.replace("/", "?")
+
+    gene_path = os.path.join(output_dir, f"{gene_name}.pkl")
+    gene_df.to_pickle(gene_path)
+
+print(f"All GC-files created!")
 '''
 
 
+# SCATTERPLOT for matches ------------------------------------
 
-# MAKE DF FOR RATIO between genes and genomes ----------------
+gene_names = "/home/enyaa/gene_genomes/gene_names.txt"
+euclidean_path = "/storage/enyaa/REVISED/KMER/euclidean_split_genes"
+gc_ratio_path = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes"
+taxonomy_path = "/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes"
 
-# !!!!!!!!!!!!!!!!!!!!!!!!
-# DEN HÄR KODEN ÄR BARA INLAGD FRÅN CHATGPT, INTE TESTAD
-# !!!!!!!!!!!!!!!!!!!!!!!!
+gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
-import pandas as pd
+euclidean_distances_all = []
+gc_ratio_all = []
 
-# Step 1: Load the CSV files into pandas DataFrames
-genes_df = pd.read_csv('gc_content_gene.csv')
-bacteria_df = pd.read_csv('gc_content_bacteria.csv')
+for gene_name in gene_names_df["Gene_name"][:3]:
+    try:
+        euclidean_gene_df = pd.read_pickle(f"{euclidean_path}{gene_name}.pkl")
+        ratio_gene_df = pd.read_pickle(f"{gc_ratio_path}{gene_name}.pkl")
+        taxonomy_gene_df = pd.read_pickle(f"{taxonomy_path}{gene_name}.pkl")
+        matching_bacteria = taxonomy_gene_df["Bacteria_ID"].tolist()
 
-# Step 2: Create a DataFrame to store the results (ratio of gene GC content to bacteria GC content)
-# Initialize an empty DataFrame with genes as rows and bacteria as columns
-result_df = pd.DataFrame(index=genes_df['Gene_name'], columns=bacteria_df['Bacteria_ID'])
+        filtered_euclidean_gene_df = euclidean_gene_df.loc[gene_name, matching_bacteria]
+        filtered_ratio_gene_df = ratio_gene_df.loc[gene_name, matching_bacteria]
 
-# Step 3: Calculate the ratio between gene GC content and bacteria GC content
-for gene in genes_df.itertuples():
-    for bacteria in bacteria_df.itertuples():
-        gene_name = gene.Gene_name
-        bacteria_id = bacteria.Bacteria_ID
-        gene_gc = gene.GC_content
-        bacteria_gc = bacteria.GC_content
-        # Calculate the ratio
-        ratio = gene_gc / bacteria_gc
-        # Store the ratio in the result DataFrame
-        result_df.at[gene_name, bacteria_id] = ratio
+        #blir detta rätt??
+        euclidean_distances_all.extend(filtered_euclidean_gene_df.values)
+        gc_ratio_all.extend(filtered_ratio_gene_df.values)
+    except Exception as e:
+        print(f"Skipping {gene_name} due to error: {e}")
 
-# Step 4: Save the result DataFrame to a CSV file
-result_df.to_csv('gc_content_ratios.csv')
-
-# Optional: Display the result
-print(result_df)
-
-
-
+# Scatterplot:
+plt.figure(figsize=(8, 6))
+plt.scatter(euclidean_distances_all, gc_ratio_all, alpha=0.5, s=10)
+plt.xlabel("Euclidean distance")
+plt.ylabel("GC-ratio")
+plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
+plt.grid(True)
+plt.show()

@@ -124,11 +124,9 @@ print(f"All GC-files created!")
 
 
 # SCATTERPLOT for matches ------------------------------------
-
-gene_names = "/home/enyaa/gene_genomes/gene_names.txt"
-euclidean_path = "/storage/enyaa/REVISED/KMER/euclidean_split_genes"
-gc_ratio_path = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes"
-taxonomy_path = "/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes"
+#'''
+gene_names = "/home/enyaa/gene_genome/gene_names.txt"
+gc_ratio_path = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes/"
 
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
@@ -137,25 +135,37 @@ gc_ratio_all = []
 
 for gene_name in gene_names_df["Gene_name"][:3]:
     try:
-        euclidean_gene_df = pd.read_pickle(f"{euclidean_path}{gene_name}.pkl")
+        if "/" in gene_name:
+            gene_name = gene_name.replace("/", "?")
+
+        euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
         ratio_gene_df = pd.read_pickle(f"{gc_ratio_path}{gene_name}.pkl")
-        taxonomy_gene_df = pd.read_pickle(f"{taxonomy_path}{gene_name}.pkl")
-        matching_bacteria = taxonomy_gene_df["Bacteria_ID"].tolist()
 
-        filtered_euclidean_gene_df = euclidean_gene_df.loc[gene_name, matching_bacteria]
-        filtered_ratio_gene_df = ratio_gene_df.loc[gene_name, matching_bacteria]
+        # find matching bacteria
+        path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
+        if os.path.exists(path):
+            taxonomy_gene_df = pd.read_csv(path, sep=",")
+            matching_bacteria = taxonomy_gene_df[['Bacteria_ID']].drop_duplicates().tolist()
+        else: # if taxonomy file doesn't exist - there are no matches for the gene, skip since we only are interested in matches in this code
+            print(f"File not found: {path}")  
+            continue  # Skip to the next gene
+            
+        # filter to only include matching bacteria
+        filtered_euclidean_gene_df = euclidean_gene_df.loc[gene_name, matching_bacteria] # first column with Bacteria_ID and second column with Euclidean_distance - but no header!
+        filtered_ratio_gene_df = ratio_gene_df.loc[gene_name, matching_bacteria] # first column with Bacteria_ID and second column with GC_ratio - but no header!
 
-        #blir detta rätt??
-        euclidean_distances_all.extend(filtered_euclidean_gene_df.values)
-        gc_ratio_all.extend(filtered_ratio_gene_df.values)
+        euclidean_distances_all.extend(filtered_euclidean_gene_df.values) # list with euclidean distances
+        gc_ratio_all.extend(filtered_ratio_gene_df.values) # list with gc_ratio, in same bacterial order as the euclidean_distances_all
     except Exception as e:
         print(f"Skipping {gene_name} due to error: {e}")
 
 # Scatterplot:
 plt.figure(figsize=(8, 6))
-plt.scatter(euclidean_distances_all, gc_ratio_all, alpha=0.5, s=10)
+plt.scatter(euclidean_distances_all, gc_ratio_all, alpha=1, s=10)
 plt.xlabel("Euclidean distance")
 plt.ylabel("GC-ratio")
 plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
 plt.grid(True)
-plt.show()
+plt.savefig('/home/enyaa/gene_genome/scatterplot_GC.png') 
+plt.close()
+#'''

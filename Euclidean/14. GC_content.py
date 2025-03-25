@@ -7,6 +7,7 @@ import os
 import pickle
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # GC-CONTENT FOR BACTERIA ------------------------------------
@@ -80,7 +81,9 @@ print(f"Saved pickle results to {output_file}")
 '''
 
 # MAKE DF FOR RATIO between genes and genomes ----------------
-'''
+#'''
+
+start_time = time.time()
 
 # Load the files with GC-content for genes and genomes
 file_bacteria = "/storage/enyaa/REVISED/GC/gc_content_bacteria.pkl"
@@ -91,40 +94,37 @@ with open(file_bacteria, "rb") as f:
 with open(file_genes, "rb") as f:
     genes_gc_df = pickle.load(f)
 
-# Ratio between gene GC content and bacteria GC content (gene/bacteria)
-for gene in genes_gc_df.itertuples():
-    gene_name = gene.Gene_name
-    gene_gc = gene.GC_content
+# Bacteria ids and GC content
+bacteria_ids = bacteria_gc_df["Bacteria_ID"].values # array with all bacteria_ids
+bacteria_gc = bacteria_gc_df["GC_content"].astype(np.float32).values # array with gc_content for bacteria
 
-    # Create df for current gene (values = NaN)
-    gene_df = pd.DataFrame(index=[gene_name], columns=bacteria_gc_df['Bacteria_ID'])
-    gene_df.columns.name = None # take away the label "Bacteria_ID"
+output_dir = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes"
 
-    for bacteria in bacteria_gc_df.itertuples():
-        bacteria_id = bacteria.Bacteria_ID
-        bacteria_gc = bacteria.GC_content
-
-        # Calculate the ratio
-        ratio = gene_gc / bacteria_gc
-
-        # Store the ratio in the result DataFrame
-        gene_df.at[gene_name, bacteria_id] = ratio
-
-    # Save result to pickle - one for each gene
-    output_dir = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes"
+# Go through each gene
+for _, row in genes_gc_df.iterrows(): # _ is the nr of the row starting at 0, row is the gene_name and gc_content for one gene
+    gene_name = row["Gene_name"]
+    gene_gc = row["GC_content"]
 
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    gene_path = os.path.join(output_dir, f"{gene_name}.pkl")
-    gene_df.to_pickle(gene_path)
+    gene_path = os.path.join(output_dir, f"{gene_name}.csv")
 
-print(f"All GC-files created!")
-'''
+    # Compute GC ratio 
+    ratio = np.round(gene_gc / bacteria_gc, 4) # array of the ratio for one gene vs all genomes
+
+    # Save one file for each gene 
+    pd.DataFrame([ratio], columns=bacteria_ids).to_csv(gene_path, index=False, float_format="%.2f")
+
+
+end_time = time.time()
+total_time = (end_time - start_time)/60
+print(f"All GC-files created in: {total_time} minutes!")
+#'''
 
 
 # SCATTERPLOT for matches ------------------------------------
-#'''
+'''
 gene_names = "/home/enyaa/gene_genome/gene_names.txt"
 gc_ratio_path = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes/"
 
@@ -139,7 +139,7 @@ for gene_name in gene_names_df["Gene_name"][:3]:
             gene_name = gene_name.replace("/", "?")
 
         euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
-        ratio_gene_df = pd.read_pickle(f"{gc_ratio_path}{gene_name}.pkl")
+        ratio_gene_df = pd.read_csv(f"{gc_ratio_path}{gene_name}.csv")
 
         # find matching bacteria
         path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
@@ -168,4 +168,4 @@ plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
 plt.grid(True)
 plt.savefig('/home/enyaa/gene_genome/scatterplot_GC.png') 
 plt.close()
-#'''
+'''

@@ -60,10 +60,12 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
         #matching_df = taxonomy_df[taxonomy_df["Gene_name"] == gene_name][["Bacteria_ID"]] # takes the matching bacteria_id, so we will have the bacteria_id that the gene_name matches with
         #print(len(matching_df))
         #print(matching_df['Bacteria_ID'].nunique())
+        matches = 1 # there exists matches
         
     else: # if taxonomy file doesn't exist - there are no matches for the gene
         matching_df = pd.DataFrame(columns=["Bacteria_ID"]) # create an empty matching_df
         print(f"File not found: {path}")
+        matches = 0 # no matches
 
     # Add match status column using merge
     euclidean_gene_df = euclidean_gene_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
@@ -81,9 +83,10 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
     # Select top 6 most frequent phyla
     top_phyla = euclidean_gene_df["Phylum"].value_counts().head(6)
     euclidean_top_phyla_df = euclidean_gene_df[euclidean_gene_df["Phylum"].isin(top_phyla.index)]
-        # euclidean_top_phyla_df - has only the top 6 phyla - for each gene
+        # euclidean_top_phyla_df - has only the top 6 phyla - for each gene (columns: Bacteria_ID, Euclidean_distance, Match_status, Phylum)
     #print(euclidean_top_phyla_df)
     #print(top_phyla)
+
     # BINS FOR THE HISTOGRAM ------------------------
     nr_bins = 30
     #bin_edges = np.linspace(global_min, global_max, nr_bins + 1)
@@ -93,8 +96,26 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
     bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
     # DOWNSAMPLE NO_MATCH ---------------------------
-    downsample_factor = 0.2 # keep 20% of the no_match bacteria, from each bin
+    # Nr of matches
+    match_count = (euclidean_top_phyla_df["Match_status"] == "Match").sum() 
 
+    # How many no_matches to keep
+    if matches == 1: # if matches exists
+        keep_size = match_count * 3
+    else:
+        keep_size = 320000 
+
+    # Dataframes for matches and no_matches
+    match_df = euclidean_top_phyla_df[euclidean_top_phyla_df["Match_status"] == "Match"]
+    no_match_df = euclidean_top_phyla_df[euclidean_top_phyla_df["Match_status"] == "No_match"]
+
+    # Downsample no_matches
+    downsampled_no_matches_df = no_match_df.sample(n=keep_size, random_state=42).reset_index(drop=True)
+    
+    downsampled_df = pd.concat([match_df, downsampled_no_matches_df]).reset_index(drop=True)
+
+    '''
+    # om man vill göra fast för varje phylum och beroende på hur många matches, gör följande
     downsampled_no_matches = [] # will become a list of dataframes
 
     for phylum, phylum_df in euclidean_top_phyla_df.groupby("Phylum"): # phylum - name of phylum, phylum_df - df that has only rows from that phylum
@@ -103,18 +124,12 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
         matches_phylum_df = phylum_df[phylum_df["Match_status"] == "Match"]
         no_matches_phylum_df = phylum_df[phylum_df["Match_status"] == "No_match"]  
 
-        # each bacteria is assigned to a bin
-        bin_nr = np.digitize(no_matches_phylum_df["Euclidean_distance"], bin_edges) - 1  # subtracting 1 to get index starting from 0
-        no_matches_phylum_df = no_matches_phylum_df.copy()
-        no_matches_phylum_df.loc[:, "bin_nr"] = bin_nr
-        #no_matches_phylum_df["bin_nr"] = bin_nr
+        # Calculate downsample size (1.1 * match_count)
+        downsample_size = int(1.1 * match_count)
 
-        # group by bins and downsample
-        downsampled_no_matches_phylum_df = (
-            no_matches_phylum_df.groupby(bin_nr, group_keys=False) # group_keys=False - group labels not added to the output
-            .apply(lambda x: x.sample(frac=downsample_factor) if len(x) > 1 else x) 
-        ) # lambda is a funtion, x - one bin from groupby, sample - randomly selects rows, if it is only 1 row/bacteria, it keeps it
-
+        # Step 3: Downsample the entire DataFrame
+        downsampled_no_matches_phylum_df = no_matches_phylum_df.sample(n=downsample_size, random_state=42)
+       
         # Append both "Match" and downsampled "No_match" bacteria
         downsampled_no_matches.append(pd.concat([matches_phylum_df, downsampled_no_matches_phylum_df]))
 
@@ -122,6 +137,7 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
     downsampled_df = pd.concat(downsampled_no_matches, ignore_index=True)
         # downsampled_df contains all matches, but downsampled no_matches
     #print(downsampled_df.head(10))
+    '''
 
     # COUNT NR OF BACTERIA --------------------------
     # in each phylum
@@ -149,8 +165,12 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
     # Add title
     if "?" in gene_name:
         gene_name = gene_name.replace("?", "/")
-    plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
-
+    
+    if matches == 1: # if matches exists
+        plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
+    else:
+        plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
+    
     pdfFile.savefig(g.figure)
     plt.close(g.figure)
 

@@ -13,7 +13,7 @@ start_time = time.time() # Starting time
 
 # GENE_NAMES ----------------------------------------
 # Load file with gene_names (sorted)
-gene_name_file = "/home/enyaa/gene_genome/gene_names.txt"
+gene_name_file = "/storage/enyaa/REVISED/gene_names.txt"
 gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
 #print(gene_names_df.head())
 
@@ -26,11 +26,11 @@ full_taxonomy_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order",
 
 
 # PDF -----------------------------------------------
-pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot.pdf")
+pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_all_correct.pdf")
 
 
 # FOR EACH GENE_NAME --------------------------------
-for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names in alphabetical order
+for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in alphabetical order
 #for gene_name in sorted(euclidean_df.index): # loops through the gene_names in alphabetical order
     
     if "/" in gene_name:
@@ -98,12 +98,18 @@ for gene_name in gene_names_df["Gene_name"][:3]: # loops through the gene_names 
     # DOWNSAMPLE NO_MATCH ---------------------------
     # Nr of matches
     match_count = (euclidean_top_phyla_df["Match_status"] == "Match").sum() 
+    #print(match_count)
 
     # How many no_matches to keep
     if matches == 1: # if matches exists
-        keep_size = match_count * 3
+        if match_count < 100:
+            keep_size = 2000
+        elif match_count < 3000:
+            keep_size = 10000
+        else:
+            keep_size = match_count * 3
     else:
-        keep_size = 320000 
+        keep_size = 300000 
 
     # Dataframes for matches and no_matches
     match_df = euclidean_top_phyla_df[euclidean_top_phyla_df["Match_status"] == "Match"]

@@ -81,7 +81,7 @@ print(f"Saved pickle results to {output_file}")
 '''
 
 # MAKE DF FOR RATIO between genes and genomes ----------------
-#'''
+'''
 
 start_time = time.time()
 
@@ -120,12 +120,14 @@ for _, row in genes_gc_df.iterrows(): # _ is the nr of the row starting at 0, ro
 end_time = time.time()
 total_time = (end_time - start_time)/60
 print(f"All GC-files created in: {total_time} minutes!")
-#'''
+'''
 
 
 # SCATTERPLOT for matches ------------------------------------
-'''
-gene_names = "/home/enyaa/gene_genome/gene_names.txt"
+#'''
+start_time = time.time()
+
+gene_names = "/storage/enyaa/REVISED/gene_names.txt"
 gc_ratio_path = "/storage/enyaa/REVISED/GC/gc_ratio_split_genes/"
 
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
@@ -133,7 +135,7 @@ gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 euclidean_distances_all = []
 gc_ratio_all = []
 
-for gene_name in gene_names_df["Gene_name"][:3]:
+for gene_name in gene_names_df["Gene_name"]:
     try:
         if "/" in gene_name:
             gene_name = gene_name.replace("/", "?")
@@ -145,14 +147,14 @@ for gene_name in gene_names_df["Gene_name"][:3]:
         path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
         if os.path.exists(path):
             taxonomy_gene_df = pd.read_csv(path, sep=",")
-            matching_bacteria = taxonomy_gene_df[['Bacteria_ID']].drop_duplicates().tolist()
+            matching_bacteria = taxonomy_gene_df['Bacteria_ID'].drop_duplicates().tolist()
         else: # if taxonomy file doesn't exist - there are no matches for the gene, skip since we only are interested in matches in this code
             print(f"File not found: {path}")  
             continue  # Skip to the next gene
             
         # filter to only include matching bacteria
         filtered_euclidean_gene_df = euclidean_gene_df.loc[gene_name, matching_bacteria] # first column with Bacteria_ID and second column with Euclidean_distance - but no header!
-        filtered_ratio_gene_df = ratio_gene_df.loc[gene_name, matching_bacteria] # first column with Bacteria_ID and second column with GC_ratio - but no header!
+        filtered_ratio_gene_df = ratio_gene_df.loc[0, matching_bacteria] # first column with Bacteria_ID and second column with GC_ratio - but no header!
 
         euclidean_distances_all.extend(filtered_euclidean_gene_df.values) # list with euclidean distances
         gc_ratio_all.extend(filtered_ratio_gene_df.values) # list with gc_ratio, in same bacterial order as the euclidean_distances_all
@@ -168,4 +170,8 @@ plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
 plt.grid(True)
 plt.savefig('/home/enyaa/gene_genome/scatterplot_GC.png') 
 plt.close()
-'''
+
+end_time = time.time()
+total_time = (end_time - start_time)/60
+print(f"Scatterplot created in: {total_time} minutes!")
+#'''

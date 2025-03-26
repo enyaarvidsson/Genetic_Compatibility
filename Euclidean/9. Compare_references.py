@@ -37,7 +37,7 @@ not_mobile_df = chromosomal_df[chromosomal_df['Mobility'] == 'Not_mobile']
 taxonomy_df_list = []
 for gene in not_mobile_df['Gene_name']:
     #gene_name = 
-    file_path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene}.csv"
+    file_path = f"/storage/jolunds/REVISED/TAXONOMY/new_taxonomy_split_genes/taxonomy_results_{gene}.csv"
     if os.path.exists(file_path):
         taxonomy_df = pd.read_csv(file_path, sep=",", header=None) 
         taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
@@ -84,11 +84,13 @@ path = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_li
 full_lineage_df = pd.read_csv(path, sep="\t", header=None)
 full_lineage_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
 
+genus_mapping = full_lineage_df[["Bacteria_ID", "Genus"]]
+
 gram_positive_bacteria = full_lineage_df[full_lineage_df["Genus"].isin(gram_positive_genera)]
 incomp_bacteria_id = list(gram_positive_bacteria["Bacteria_ID"])
 
 random.seed(42)
-incomp_bacteria_id = random.sample(incomp_bacteria_id, k=700)
+incomp_bacteria_id = random.sample(incomp_bacteria_id, k=10_000)
 incomp_gene_names = ["NDM", "IMP", "GIM", "SPM", "VIM"] #Metallo betalaktamases 
 
 # Ladda gene namn
@@ -97,7 +99,7 @@ with open("/storage/jolunds/REVISED/gene_names.txt", "r") as f:
 
 incomp_genes = [gene for gene in all_genes if any(gene.startswith(prefix) for prefix in incomp_gene_names)]
 random.seed(50)
-incomp_genes = random.sample(incomp_genes, k=120)
+incomp_genes = random.sample(incomp_genes, k=75)
 print(len(incomp_genes))
 
 # Loopa gennamn, filtera på bacteria id incomp_bacteria_id
@@ -116,16 +118,16 @@ for gene in incomp_genes:
 incomp_euclidean_df = pd.concat(incomp_euclidean_list).reset_index(drop=True)
 incomp_euclidean_df['Reference'] = 'Incompatible'
 
+# Random 12k from incomp euclidean
+sample_incomp_euclidean_df = incomp_euclidean_df.sample(n=12_000, random_state=42)
+
 print(incomp_euclidean_df.head())
-print(len(incomp_euclidean_df))
+print(len(sample_incomp_euclidean_df))
 
 ###### WILCOXON
 
 group1 = list(comp_euclidean_df['Euclidean_distance'])
-group2 = list(incomp_euclidean_df['Euclidean_distance'])
-
-print(group1[:10])
-print(group2[:10])
+group2 = list(sample_incomp_euclidean_df['Euclidean_distance'])
 
 # Perform a one-sided Mann-Whitney U test (alternative='less' tests if group1 < group2)
 stat, p_value = mannwhitneyu(group1, group2, alternative='less')  # Test if group1 has smaller values
@@ -133,9 +135,9 @@ stat, p_value = mannwhitneyu(group1, group2, alternative='less')  # Test if grou
 print(f"Statistic: {stat}, P-value: {p_value}")
 
 # Combine incomp and comp
-reference_euclidean_df = pd.concat([comp_euclidean_df, incomp_euclidean_df], ignore_index=True)
+reference_euclidean_df = pd.concat([comp_euclidean_df, sample_incomp_euclidean_df], ignore_index=True)
 reference_euclidean_df = reference_euclidean_df.sort_values(by='Euclidean_distance').reset_index(drop=True)
-
+reference_euclidean_df = reference_euclidean_df.merge(genus_mapping, on=['Bacteria_ID'], how='left')
 reference_euclidean_df.to_csv("/home/jolunds/newtest/reference_euclidean_df.csv")
 # Plot results
 plt.figure(figsize=(10, 6))
@@ -146,7 +148,7 @@ plt.ylabel("Number of bacteria")
 plt.title(f"p={p_value}")
 
 #plt.savefig("/home/enyaa/gene_genome/histogram_references.png")
-plt.savefig("/home/jolunds/newtest/histogram_references.png")
+plt.savefig("/home/jolunds/newtest/histogram_references_new.png")
 plt.close()
 
 '''

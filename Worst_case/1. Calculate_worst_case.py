@@ -14,7 +14,7 @@ with open ("/storage/enyaa/REVISED/KMER/gene_dist/gene_kmer_distributions.pkl", 
 genes_df = pd.DataFrame.from_dict(gene_dictionary, orient="index").T
 
 worst_case_list = []    
-for i in range(1,3):
+for i in range(1,17):
     file_path = f"/storage/enyaa/REVISED/KMER/genome_dist/genome_kmer_distributions_{i}.pkl"
     with open (file_path, "rb") as file:
         genome_dictionary = pickle.load(file)
@@ -43,12 +43,17 @@ worst_case_df = pd.concat(worst_case_list, axis=1)
 
 num_files = 0
 output_directory = f"/storage/jolunds/REVISED/WORST_CASE/worst_case_split/"
-for gene_name, row in worst_case_df.iterrows():
+
+for row in worst_case_df.itertuples(index=True, name=None):
+    gene_name = row[0]
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
         
     filename = os.path.join(output_directory, f"worst_case_{gene_name}.csv")
-    row.to_frame().T.to_csv(filename, index=False)
+    # Save the row as a single-row CSV
+    with open(filename, "w") as f:
+        f.write(",".join(worst_case_df.columns) + "\n")  # Write header
+        f.write(",".join(map(str, row[1:])) + "\n")  # Write values
     
     num_files += 1
 

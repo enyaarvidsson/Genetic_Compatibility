@@ -4,12 +4,12 @@ import time
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-#import seaborn as sns
+import seaborn as sns
 
-start_time = time.time()
+'''start_time = time.time()
 
 # Load gene names
-with open("/storage/jolunds/REVISED/gene_names.txt", "r") as f:
+with open("/storage/enyaa/REVISED/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
 
 # Load full lineage 
@@ -20,7 +20,7 @@ phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum"]] # only the bacteria_
 
 # Loop through genes in all_genes 
 big_table_list = []   
-for gene_name in sorted(all_genes): 
+for gene_name in all_genes: #sorted(all_genes): 
     
     if "/" in gene_name: # Just for look-up
         gene_name = gene_name.replace("/", "?")
@@ -69,36 +69,48 @@ for gene_name in sorted(all_genes):
     gene_table_df['Phylum'] = pd.Categorical(gene_table_df['Phylum'], categories=top_phyla.index, ordered=True) 
     gene_table_df = gene_table_df.sort_values('Phylum') # Sort phylum from largest to smallest
     
+    #print(gene_table_df.head())
     # Append results
     big_table_list.append(gene_table_df)
 
 # Concat
 big_table_df = pd.concat(big_table_list).reset_index(drop=True)
 
+#print(big_table_df.head(15))
 # Save
-save_path = "/storage/jolunds/REVISED/big_table.csv"
+save_path = "/storage/jolunds/REVISED/KMER/big_table.csv"
 big_table_df.to_csv(save_path, index=False)
 
 end_time = time.time()
 total_time = (end_time - start_time)/60
 
 print(f"Done creating big table with elapsed time: {total_time} minutes")
-
 '''
+
 # Create scatterplot
+start_time = time.time()
+
+big_table_df = pd.read_csv("/storage/jolunds/REVISED/KMER/big_table.csv")
+
+big_table_df["Num_matches"] = big_table_df["Num_matches"].clip(upper=5000)
+
 # Använda facet grid för att göra en figur med en plot för varje phylum
-g = sns.FacetGrid(big_table_df, col="Phylum", col_order = top_phyla.index, col_wrap = 3)
+g = sns.FacetGrid(big_table_df, col="Phylum", col_wrap = 3)
 g.map_dataframe(sns.scatterplot, x="Num_matches", y="Mean")
-g.set_axis_labels("Mean euclidean distance", "Number of bacteria")
+g.set_axis_labels("Number of matches", "Mean euclidean distance",)
 
 # Save plot
-plt.savefig("/home/jolunds/newtest/scatterplot_test.png")
+plt.savefig("/home/jolunds/newtest/scatterplot_big_table_5.png")
 plt.close(g.figure)
+top2_per_phylum = big_table_df.groupby("Phylum").apply(lambda x: x.nlargest(2, "Mean")).reset_index(drop=True)
+
+# Display the results
+print(top2_per_phylum[["Phylum", "Gene_name", "Mean"]])
 end_time = time.time()
 total_time = (end_time - start_time)/60
 
 print(f"Done creating big table and scatterplot with elapsed time: {total_time} minutes")
-'''
+
 
 # GAMMAL VERSION:
 '''

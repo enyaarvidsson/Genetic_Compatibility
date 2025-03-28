@@ -92,16 +92,20 @@ start_time = time.time()
 
 big_table_df = pd.read_csv("/storage/jolunds/REVISED/KMER/big_table.csv")
 
-big_table_df["Num_matches"] = big_table_df["Num_matches"].clip(upper=1000)
+big_table_df["Num_matches"] = big_table_df["Num_matches"].clip(upper=5000)
 
 # Använda facet grid för att göra en figur med en plot för varje phylum
-g = sns.FacetGrid(big_table_df[:30], col="Phylum", col_wrap = 3)
+g = sns.FacetGrid(big_table_df, col="Phylum", col_wrap = 3)
 g.map_dataframe(sns.scatterplot, x="Num_matches", y="Mean")
 g.set_axis_labels("Number of matches", "Mean euclidean distance",)
 
 # Save plot
-plt.savefig("/home/jolunds/newtest/scatterplot_big_table.png")
+plt.savefig("/home/jolunds/newtest/scatterplot_big_table_5.png")
 plt.close(g.figure)
+top2_per_phylum = big_table_df.groupby("Phylum").apply(lambda x: x.nlargest(2, "Mean")).reset_index(drop=True)
+
+# Display the results
+print(top2_per_phylum[["Phylum", "Gene_name", "Mean"]])
 end_time = time.time()
 total_time = (end_time - start_time)/60
 

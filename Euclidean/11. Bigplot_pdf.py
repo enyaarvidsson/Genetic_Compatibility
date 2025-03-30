@@ -21,8 +21,11 @@ gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
 # TAXONOMY (to get phyla later) ---------------------
 # Read full taxonomy file
 taxonomy_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
-full_taxonomy_df = pd.read_csv(taxonomy_file, sep="\t", header=None) 
-full_taxonomy_df.columns = ["Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
+#full_taxonomy_df = pd.read_csv(taxonomy_file, sep="\t", header=None) 
+dtype_dict = {0: "string", 2: "category"}  
+use_cols = [0, 2]  # only load Bacteria_ID and Phylum 
+full_taxonomy_df = pd.read_csv(taxonomy_file, sep="\t", usecols=use_cols, dtype=dtype_dict, header=None)
+full_taxonomy_df.columns = ["Bacteria_ID", "Phylum"]
 
 
 # PDF -----------------------------------------------
@@ -53,7 +56,10 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
     path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
     
     if os.path.exists(path):
-        taxonomy_gene_df = pd.read_csv(path, sep=",")
+        dtype_dict = {"Bacteria_ID": "string"}
+        use_cols = ["Bacteria_ID"]
+        taxonomy_gene_df = pd.read_csv(path, sep=",", usecols=use_cols, dtype=dtype_dict)
+        #taxonomy_gene_df = pd.read_csv(path, sep=",", dtype=dtype_dict)
 
         # Find matching bacteria for this gene
         matching_df = taxonomy_gene_df[['Bacteria_ID']].drop_duplicates() # bacteria_ids that has matched with the gene - UNIQUE
@@ -68,8 +74,7 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
         matches = 0 # no matches
 
     # Add match status column using merge
-    euclidean_gene_df = euclidean_gene_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
-    
+    euclidean_gene_df = euclidean_gene_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match    
     euclidean_gene_df["Match_status"] = euclidean_gene_df["Match_status"].fillna("No_match")
         # euclidean_gene_df - has Bacteria_ID, Euclidean_distance and Match_status columns
     #print(len(euclidean_gene_df))
@@ -116,8 +121,11 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
     no_match_df = euclidean_top_phyla_df[euclidean_top_phyla_df["Match_status"] == "No_match"]
 
     # Downsample no_matches
-    downsampled_no_matches_df = no_match_df.sample(n=keep_size, random_state=42).reset_index(drop=True)
-    
+    #downsampled_no_matches_df = no_match_df.sample(n=keep_size, random_state=42).reset_index(drop=True)
+    if keep_size > len(no_match_df): # make sure np.random.choice works, so the keep_size is not bigger than the population size
+        keep_size = len(no_match_df)
+    downsampled_no_matches_df = no_match_df.iloc[np.random.choice(len(no_match_df), keep_size, replace=False)]
+
     downsampled_df = pd.concat([match_df, downsampled_no_matches_df]).reset_index(drop=True)
 
     '''

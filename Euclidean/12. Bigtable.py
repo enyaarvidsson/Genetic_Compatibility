@@ -10,7 +10,7 @@ from Bio import SeqIO
 start_time = time.time()
 
 # Load gene names
-with open("/storage/jolunds/REVISED/gene_names.txt", "r") as f:
+with open("/storage/enyaa/REVISED/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
 
 # Load full lineage 
@@ -29,12 +29,12 @@ for gene_name in all_genes: #sorted(all_genes):
         gene_name = gene_name.replace("/", "?")
     
     # Load euclidean df
-    path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl"
-    gene_euclidean_df = pd.read_pickle(path).T.reset_index() # Switch to long format 
-    gene_euclidean_df.columns = ['Bacteria_ID', 'Euclidean_distance']
- 
+    path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl"
+    gene_euclidean_df = pd.read_pickle(path).reset_index(drop=True) #.T.reset_index() # Switch to long format 
+    #gene_euclidean_df.columns = ['Bacteria_ID', 'Euclidean_distance']
+    
     # Add phylum column
-    phylum_euclidean_df = gene_euclidean_df.merge(phylum_mapping, on=['Bacteria_ID'], how='inner')
+    phylum_euclidean_df = gene_euclidean_df.merge(phylum_mapping, on=['Bacteria_ID'], how='left')
     #print(phylum_euclidean_df.head())
 
     # Find 6 top phylum & filter for top phyla
@@ -142,14 +142,13 @@ for gene_name in all_genes: #sorted(all_genes):
 
 # Concat
 big_table_df = pd.concat(big_table_list).reset_index(drop=True)
-print(big_table_df)
+
 table_genes_df = pd.concat(table_genes_list).reset_index(drop=True)
 
 # Gene length
 filepath = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"
 
 gene_lengths = {}
-
 for record in SeqIO.parse(filepath, "fasta"):
     header = record.description
     
@@ -165,13 +164,11 @@ gene_lengths_df = pd.DataFrame(list(gene_lengths.items()), columns=['Gene_name',
 
 # Add gene length
 table_genes_df = table_genes_df.merge(gene_lengths_df, on='Gene_name', how='left')
-print(table_genes_df)
-
 
 # Save
-path_bigtable = "/storage/jolunds/REVISED/KMER/big_table.csv"
+path_bigtable = "/storage/jolunds/REVISED/KMER/big_table_filtered.csv"
 big_table_df.to_csv(path_bigtable, index=False)
-path_table_genes = "/storage/jolunds/REVISED/KMER/table_genes.csv"
+path_table_genes = "/storage/jolunds/REVISED/KMER/table_genes_filtered.csv"
 table_genes_df.to_csv(path_table_genes, index=False)
 
 end_time = time.time()

@@ -123,8 +123,9 @@ print(f"All GC-files created in: {total_time} minutes!")
 '''
 
 
-# SCATTERPLOT for matches ------------------------------------
+# SCATTERPLOT RATIO for matches ------------------------------------
 #'''
+
 start_time = time.time()
 
 gene_names = "/storage/enyaa/REVISED/gene_names.txt"
@@ -136,31 +137,46 @@ euclidean_distances_all = []
 gc_ratio_all = []
 
 for gene_name in gene_names_df["Gene_name"]:
-    try:
-        if "/" in gene_name:
-            gene_name = gene_name.replace("/", "?")
+    if "/" in gene_name:
+        gene_name = gene_name.replace("/", "?")
 
-        euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
-        ratio_gene_df = pd.read_csv(f"{gc_ratio_path}{gene_name}.csv")
+    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl")
+    ratio_gene_df = pd.read_csv(f"{gc_ratio_path}{gene_name}.csv")
 
-        # find matching bacteria
-        path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
-        if os.path.exists(path):
-            taxonomy_gene_df = pd.read_csv(path, sep=",")
-            matching_bacteria = taxonomy_gene_df['Bacteria_ID'].drop_duplicates().tolist()
-        else: # if taxonomy file doesn't exist - there are no matches for the gene, skip since we only are interested in matches in this code
-            print(f"File not found: {path}")  
-            continue  # Skip to the next gene
+    # find matching bacteria
+    path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
+    if os.path.exists(path):
+        taxonomy_gene_df = pd.read_csv(path, sep=",")
+        matching_bacteria = taxonomy_gene_df['Bacteria_ID'].drop_duplicates().tolist() # contains all the matching bacteria_id to the current gene
+    else: # if taxonomy file doesn't exist - there are no matches for the gene, skip since we only are interested in matches in this code
+        print(f"File not found: {path}")  
+        continue  # Skip to the next gene
             
-        # filter to only include matching bacteria
-        filtered_euclidean_gene_df = euclidean_gene_df.loc[gene_name, matching_bacteria] # first column with Bacteria_ID and second column with Euclidean_distance - but no header!
-        filtered_ratio_gene_df = ratio_gene_df.loc[0, matching_bacteria] # first column with Bacteria_ID and second column with GC_ratio - but no header!
+    # filter to only include matching bacteria
+    filtered_euclidean_gene_df = euclidean_gene_df[euclidean_gene_df['Bacteria_ID'].isin(matching_bacteria)] # first column with Bacteria_ID and second column with Euclidean_distance
+    
+    if filtered_euclidean_gene_df.empty: 
+        print("No matches for gene:", gene_name)
+        continue
+    
+    # only matching bacteria, filtered
+    matching_bacteria_filtered = filtered_euclidean_gene_df['Bacteria_ID'].tolist()
 
-        euclidean_distances_all.extend(filtered_euclidean_gene_df.values) # list with euclidean distances
-        gc_ratio_all.extend(filtered_ratio_gene_df.values) # list with gc_ratio, in same bacterial order as the euclidean_distances_all
-    except Exception as e:
-        print(f"Skipping {gene_name} due to error: {e}")
+    filtered_ratio_gene = ratio_gene_df.loc[0, ratio_gene_df.columns.isin(matching_bacteria_filtered)] 
+    
+    # make into a df
+    filtered_ratio_gene_df = pd.DataFrame({
+        "Bacteria_ID": filtered_ratio_gene.index,
+        "GC_ratio": filtered_ratio_gene.values
+    })
 
+    # merge euclidean and ratio
+    merged_df = pd.merge(filtered_euclidean_gene_df, filtered_ratio_gene_df, on="Bacteria_ID", how="inner")
+
+    euclidean_distances_all.extend(merged_df["Euclidean_distance"].values) 
+    gc_ratio_all.extend(merged_df["GC_ratio"].values) 
+
+    
 # Scatterplot:
 plt.figure(figsize=(8, 6))
 plt.scatter(euclidean_distances_all, gc_ratio_all, alpha=1, s=10)

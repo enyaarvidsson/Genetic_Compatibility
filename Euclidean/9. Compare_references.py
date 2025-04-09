@@ -63,8 +63,8 @@ compatible_df = not_mobile_taxonomy[not_mobile_taxonomy["Gene_name"].isin(keep_g
 # Load euclidean df
 euclidean_df_list = []
 for gene in compatible_df['Gene_name'].unique():
-    file_path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene}.pkl"
-    gene_euclidean_df = pd.read_pickle(file_path).T.reset_index()
+    file_path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene}.pkl"
+    gene_euclidean_df = pd.read_pickle(file_path) #.T.reset_index()
     gene_euclidean_df.insert(0, 'Gene_name', gene)# Add gene name column
     gene_euclidean_df.rename(columns={'index': 'Bacteria_ID', f'{gene}': 'Euclidean_distance'}, inplace=True)
 
@@ -74,6 +74,7 @@ for gene in compatible_df['Gene_name'].unique():
 
 comp_euclidean_df = pd.concat(euclidean_df_list).reset_index(drop=True)
 comp_euclidean_df['Reference'] = 'Compatible' # Add 'Compatible'
+
 
 
 # INCOMPATIBLE ------------------------
@@ -105,8 +106,8 @@ incomp_genes = random.sample(incomp_genes, k=75)
 # Loopa gennamn, filtera på bacteria id incomp_bacteria_id
 incomp_euclidean_list = []
 for gene in incomp_genes:
-    file_path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes/euclidean_df_{gene}.pkl"
-    gene_euclidean_df = pd.read_pickle(file_path).T.reset_index()
+    file_path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene}.pkl"
+    gene_euclidean_df = pd.read_pickle(file_path) #.T.reset_index()
     gene_euclidean_df.insert(0, 'Gene_name', gene)# Add gene name column
     gene_euclidean_df.rename(columns={'index': 'Bacteria_ID', f'{gene}': 'Euclidean_distance'}, inplace=True)
     
@@ -118,8 +119,13 @@ for gene in incomp_genes:
 incomp_euclidean_df = pd.concat(incomp_euclidean_list).reset_index(drop=True)
 incomp_euclidean_df['Reference'] = 'Incompatible'
 
+genes = incomp_euclidean_df['Gene_name'].nunique()
+print(incomp_euclidean_df.head(10))
+print(len(incomp_euclidean_df))
+print(genes)
+
 # Random 12k from incomp euclidean
-sample_incomp_euclidean_df = incomp_euclidean_df.sample(n=12_000, random_state=42)
+sample_incomp_euclidean_df = incomp_euclidean_df.sample(n=500, random_state=42)
 
 # Wilcoxon rank sum test
 group1 = list(comp_euclidean_df['Euclidean_distance'])
@@ -144,5 +150,5 @@ plt.ylabel("Number of bacteria")
 plt.title(f"p={p_value}")
 
 #plt.savefig("/home/enyaa/gene_genome/histogram_references.png")
-plt.savefig("/home/jolunds/newtest/histogram_references_new.png")
+plt.savefig("/home/jolunds/newtest/histogram_references_filtered.png")
 plt.close()

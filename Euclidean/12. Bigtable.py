@@ -55,7 +55,7 @@ for gene_name in all_genes: #sorted(all_genes):
         
         matching_df = taxonomy_df[['Bacteria_ID']]
         phylum_euclidean_df = phylum_euclidean_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left").fillna("No_match") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
-        phylum_counts = taxonomy_df.groupby('Phylum').size().reset_index(name="Num_matches") # Count num matches in each phylum
+        phylum_counts = phylum_euclidean_df[phylum_euclidean_df["Match_status"] == "Match"].groupby("Phylum").size().reset_index(name="Num_matches")
     else: # If taxonomy file do not exist
         phylum_counts = pd.DataFrame({"Phylum": top_phyla.index.tolist(), "Num_matches": [0] * len(top_phyla)})
         phylum_euclidean_df["Match_status"] = "No_match"
@@ -166,9 +166,9 @@ gene_lengths_df = pd.DataFrame(list(gene_lengths.items()), columns=['Gene_name',
 table_genes_df = table_genes_df.merge(gene_lengths_df, on='Gene_name', how='left')
 
 # Save
-path_bigtable = "/storage/jolunds/REVISED/KMER/big_table_filtered.csv"
+path_bigtable = "/storage/jolunds/REVISED/KMER/big_table_filtered2.csv"
 big_table_df.to_csv(path_bigtable, index=False)
-path_table_genes = "/storage/jolunds/REVISED/KMER/table_genes_filtered.csv"
+path_table_genes = "/storage/jolunds/REVISED/KMER/table_genes_filtered2.csv"
 table_genes_df.to_csv(path_table_genes, index=False)
 
 end_time = time.time()

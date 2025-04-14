@@ -35,7 +35,7 @@ taxonomy_df = pd.read_csv(path, sep=",")
 matching_df = taxonomy_df[['Bacteria_ID']].drop_duplicates()
 worst_case_df_filtered = worst_case_df_filtered.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left").fillna("No_match") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
 
-match_count = (worst_case_df_filtered['Match_status'] == 'Match').sum()
+'''match_count = (worst_case_df_filtered['Match_status'] == 'Match').sum()
 
 if match_count == 0:
     keep_size = 10000
@@ -44,23 +44,29 @@ elif match_count < 100:
 elif match_count < 3000:
     keep_size = 10000
 else:
-    keep_size = match_count * 3
+    keep_size = match_count * 3'''
 
 # Split into match and no_match
 match_df = worst_case_df_filtered[worst_case_df_filtered['Match_status'] == 'Match']
 no_match_df = worst_case_df_filtered[worst_case_df_filtered['Match_status'] == 'No_match']
-
+'''
 # Sample up to `keep_size` rows from no_match
 no_match_sampled = no_match_df.sample(n=min(keep_size, len(no_match_df)), random_state=42)
 
 # Combine both
-worst_case_df_filtered = pd.concat([match_df, no_match_sampled], ignore_index=True)
+worst_case_df_filtered = pd.concat([match_df, no_match_sampled], ignore_index=True)'''
 
 #worst_case_df_filtered = worst_case_df[:20_000]
 
 #x_min = worst_case_df["Worst_case"].min()
 #x_max = worst_case_df["Worst_case"].max()
 
+plt.figure(figsize=(8,6))
+sns.scatterplot(data = match_df, x='Max_difference', y='Relative_difference')
+plt.savefig(f"/home/jolunds/newtest/worst_case_plots/worst_case_matches_{gene_name}.png")
+plt.close()
+
+'''
 # Scatterplot
 g = sns.FacetGrid(worst_case_df_filtered, col="Phylum", col_order=top_phyla.index, col_wrap=3)
 g.map_dataframe(sns.scatterplot, x='Max_difference', y='Relative_difference', hue="Match_status", hue_order=['No_match', 'Match'], s=10)
@@ -69,7 +75,7 @@ g.set_titles(col_template="{col_name}")
 
 plt.savefig(f"/home/jolunds/newtest/worst_case_plots/worst_case_filtered_{gene_name}.png")
 plt.close()
-
+'''
 '''
 # Plot histogram
 num_bins = 30  # Set the desired number of bins

@@ -9,6 +9,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
+import seaborn as sns
 
 
 # GC-CONTENT FOR BACTERIA ------------------------------------
@@ -194,6 +195,113 @@ print(f"Scatterplot created in: {total_time} minutes!")
 '''
 
 
+# SCATTERPLOT RATIO for matches - FASTER ----------------
+# Calculates the GC-ratio between genes and genomes - only for filtered matches
+# Makes a scatterplot gc-ratio vs euclidean
+'''
+
+start_time = time.time()
+
+# Load one euclidean distance file to take out the filtered bacteria
+df = pd.read_pickle("/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_OXA-1095.pkl")
+bacteria_ids = df['Bacteria_ID'].unique().tolist()
+    # 77 182 bacteria_ids
+
+# Load the files with GC-content for genes and genomes
+file_bacteria = "/storage/enyaa/REVISED/GC/gc_content_bacteria.pkl"
+file_genes = "/storage/enyaa/REVISED/GC/gc_content_genes.pkl"
+
+with open(file_bacteria, "rb") as f:
+    bacteria_gc_df = pickle.load(f)
+with open(file_genes, "rb") as f:
+    genes_gc_df = pickle.load(f)
+
+bacteria_gc_filtered_df = bacteria_gc_df[bacteria_gc_df['Bacteria_ID'].isin(bacteria_ids)]
+    # 77182 rows - one column Bacteria_ID, one column GC_content
+
+# this makes code faster
+available_taxonomy_files = set(os.listdir("/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/"))
+
+# Go through each gene
+gene_names = "/storage/enyaa/REVISED/gene_names.txt"
+gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
+
+euclidean_distances_all = []
+gc_ratio_all = []
+phylum_all = []
+
+for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tqdm - progress bar
+
+    gene_gc = genes_gc_df.loc[genes_gc_df['Gene_name'] == gene_name, 'GC_content'].values[0]
+
+    # ONLY COMPUTE GC-RATIO BETWEEN GENES AND ITS MATCHES
+
+    if "/" in gene_name:
+        gene_name = gene_name.replace("/", "?")
+
+    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl")
+
+    filename = f"taxonomy_results_{gene_name}.csv"
+    if filename not in available_taxonomy_files:
+        #print(f"File not found: {filename}")
+        continue
+
+    taxonomy_path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/{filename}"
+    taxonomy_gene_df = pd.read_csv(taxonomy_path)
+    matching_df = taxonomy_gene_df[['Bacteria_ID', 'Phylum']]
+
+    top_phyla = ['Pseudomonadota', 'Bacillota', 'Actinomycetota', 'Bacteroidota', 'Cyanobacteriota', 'Campylobacterota']
+    matching_df = matching_df[matching_df['Phylum'].isin(top_phyla)]
+
+    # filter to only include matching bacteria
+    filtered_euclidean_gene_df = euclidean_gene_df.merge(matching_df, on='Bacteria_ID', how='inner')
+
+    if filtered_euclidean_gene_df.empty: 
+        #print("No matches for gene:", gene_name)
+        continue
+
+    filtered_gc_df = bacteria_gc_filtered_df.merge(
+        filtered_euclidean_gene_df[['Bacteria_ID']], on='Bacteria_ID', how='inner'
+    )
+    bacteria_gc = filtered_gc_df['GC_content'].to_numpy()
+
+    # Compute GC ratio
+    ratio = np.round(gene_gc / bacteria_gc, 4) # array of the ratio for one gene vs all genomes
+
+    phylum_all.extend(filtered_euclidean_gene_df["Phylum"].values)
+    euclidean_distances_all.extend(filtered_euclidean_gene_df["Euclidean_distance"].values) 
+    gc_ratio_all.extend(ratio) 
+
+
+df_plot = pd.DataFrame({
+    'Euclidean_distance': euclidean_distances_all,
+    'GC_ratio': gc_ratio_all,
+    'Phylum': phylum_all
+})
+
+# Scatterplot:
+plt.figure(figsize=(8, 6))
+sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_ratio', hue='Phylum', palette='Set2', s=10)
+#plt.scatter(euclidean_distances_all, gc_diff_all, alpha=1, s=10)
+plt.xlabel("Euclidean distance")
+plt.ylabel("GC-ratio")
+plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
+plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.grid(True)
+plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_ratio_test.png') 
+plt.close()
+
+
+end_time = time.time()
+total_time = (end_time - start_time)/60
+print(f"Scatterplot ratio created in: {total_time} minutes!")
+'''
+
+
+
+
+
 # SCATTERPLOT DIFFERENCE for matches ----------------
 # Calculates the GC-difference between genes and genomes - only for filtered matches
 # Makes a scatterplot gc-diff vs euclidean
@@ -227,6 +335,7 @@ gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 euclidean_distances_all = []
 gc_diff_all = []
+phylum_all = []
 
 for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tqdm - progress bar
 
@@ -246,10 +355,12 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
 
     taxonomy_path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/{filename}"
     taxonomy_gene_df = pd.read_csv(taxonomy_path)
-    matching_bacteria = taxonomy_gene_df['Bacteria_ID'].drop_duplicates().tolist() # contains all the matching bacteria_id to the current gene
+    matching_df = taxonomy_gene_df[['Bacteria_ID', 'Phylum']]
+
+    top_phyla = ['Pseudomonadota', 'Bacillota', 'Actinomycetota', 'Bacteroidota', 'Cyanobacteriota', 'Campylobacterota']
+    matching_df = matching_df[matching_df['Phylum'].isin(top_phyla)]
 
     # filter to only include matching bacteria
-    matching_df = pd.DataFrame(matching_bacteria, columns=['Bacteria_ID'])
     filtered_euclidean_gene_df = euclidean_gene_df.merge(matching_df, on='Bacteria_ID', how='inner')
 
     if filtered_euclidean_gene_df.empty: 
@@ -264,22 +375,33 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
     # Compute GC difference 
     diff = np.round(gene_gc - bacteria_gc, 4) # array of the difference for one gene vs all genomes
 
+    phylum_all.extend(filtered_euclidean_gene_df["Phylum"].values)
     euclidean_distances_all.extend(filtered_euclidean_gene_df["Euclidean_distance"].values) 
     gc_diff_all.extend(diff) 
 
 
+df_plot = pd.DataFrame({
+    'Euclidean_distance': euclidean_distances_all,
+    'GC_difference': gc_diff_all,
+    'Phylum': phylum_all
+})
+
 # Scatterplot:
 plt.figure(figsize=(8, 6))
-plt.scatter(euclidean_distances_all, gc_diff_all, alpha=1, s=10)
+sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_difference', hue='Phylum', palette='Set2', s=10)
+#plt.scatter(euclidean_distances_all, gc_diff_all, alpha=1, s=10)
 plt.xlabel("Euclidean distance")
 plt.ylabel("GC-difference")
 plt.title("GC-difference vs euclidean distance for matching genes and genomes")
+#plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
 plt.grid(True)
 plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_diff_test.png') 
 plt.close()
 
+
 end_time = time.time()
 total_time = (end_time - start_time)/60
-#print(f"Scatterplot diff created in: {total_time} minutes!")
+print(f"Scatterplot diff created in: {total_time} minutes!")
 #'''
 

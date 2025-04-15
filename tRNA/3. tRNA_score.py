@@ -3,7 +3,7 @@ import re
 from collections import Counter
 from Bio.Seq import Seq
 
-def tRNA_score(gene_dist, genome_dist):
+def tRNA_score_one_sided(gene_dist, genome_dist):
     #codons =[] #kanske behövs vid dubbelsidigt
     codon_scores = []
     for gene_codon, gene_value in gene_dist.items(): 
@@ -34,8 +34,45 @@ def tRNA_score(gene_dist, genome_dist):
                         matched = True
                         break
             if not matched:
-                difference = gene_value
-                codon_scores.append(difference)
+                codon_scores.append(gene_value)
+
+    return sum(codon_scores)
+
+def tRNA_score_two_sided(gene_dist, genome_dist):
+    codon_scores = []
+    for gene_codon, gene_value in gene_dist.items(): 
+        if gene_codon in genome_dist:
+            difference = abs(gene_value-genome_dist[gene_codon])
+            codon_scores.append(0.1*difference)
+        else:
+            first_two = gene_codon[:2]
+            third = gene_codon[2]
+
+            # Check wobble position 
+            matched = False
+            for genome_codon, genome_value in genome_dist.items():
+                if genome_codon[:2] == first_two:
+                    if third == "T" and genome_codon[2] == "C":
+                        difference = abs(gene_value - genome_value)
+                        codon_scores.append(0.2*difference)
+                        matched = True
+                        break
+                    elif third == "G" and genome_codon[2] == "A":
+                        difference = abs(gene_value - genome_value)
+                        codon_scores.append(0.2*difference)
+                        matched = True
+                        break
+                    elif genome_codon[2] == "T" and third != "G":
+                        difference = abs(gene_value - genome_value)
+                        codon_scores.append(0.9*difference)
+                        matched = True
+                        break
+            if not matched:
+                codon_scores.append(gene_value)
+                
+    for genome_codon, genome_value in genome_dist.items():
+        if genome_codon not in gene_dist:
+            codon_scores.append(0.1*genome_value)
 
     return sum(codon_scores)
 
@@ -57,7 +94,7 @@ phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum", "Species"]] # only th
 
 
 
-for gene_name in gene_names_df["Gene_name"][:2]:
+for gene_name in gene_names_df["Gene_name"]:
     gene_df = gene_codons_df[gene_codons_df['Gene_name'] == gene_name].reset_index(drop=True)
     stop_codons = ["TAA", "TAG", "TGA"]
 
@@ -71,7 +108,7 @@ for gene_name in gene_names_df["Gene_name"][:2]:
     gene_dict = gene_df.set_index("Codon")["Frequency"].to_dict()
     
     tRNA_score_list = []
-    for bacteria_id in bacteria_ids[:1]:
+    for bacteria_id in bacteria_ids:
         tRNA_file = f"/storage/jolunds/REVISED/tRNA/{bacteria_id}_trnascan.txt"
         tRNA_df = pd.read_csv(tRNA_file, sep="\t", comment="#", skiprows=3, header=None)
         tRNA_df.columns = ["Sequence_name", "tRNA_nr", "Begin", "End", "tRNA_type", "Anticodon", "Intron_begin", "Intron_end", "Score", "Comment"]
@@ -93,13 +130,16 @@ for gene_name in gene_names_df["Gene_name"][:2]:
         genome_dict = genome_df.set_index("Codon")["Frequency"].to_dict() 
 
         # tRNA score
-        tRNA_value = tRNA_score(gene_dict, genome_dict)
+        tRNA_value_one_sided = tRNA_score_one_sided(gene_dict, genome_dict)
+        tRNA_value_two_sided = tRNA_score_two_sided(gene_dict, genome_dict)
         
         # Append results
-        tRNA_score_list.append({"Bacteria_ID": bacteria_id, "tRNA_score": tRNA_value})
+        tRNA_score_list.append({"Bacteria_ID": bacteria_id, "tRNA_score_one_sided": tRNA_value_one_sided, 
+                                "tRNA_score_two_sided": tRNA_value_two_sided})
 
     gene_tRNA_df = pd.DataFrame(tRNA_score_list)
     gene_tRNA_df = gene_tRNA_df.merge(phylum_mapping, on='Bacteria_ID', how='left')
+    print(gene_tRNA_df)
 
     # Save
     if "/" in gene_name:

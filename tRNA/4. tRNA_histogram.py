@@ -4,12 +4,13 @@ import seaborn as sns
 import os
 import numpy as np
 
-gene_name = "tet(Q)"
+gene_name = "AAC6_30_AAC6_Ib"
+tRNA_score = "tRNA_score_one_sided"
 
 if "/" in gene_name:
     gene_name = gene_name.replace("/", "?")
     
-file_path = f"/storage/enyaa/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
+file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
 tRNA_score_df = pd.read_csv(file_path)
 
 # Load taxonomy results and count matches
@@ -35,8 +36,8 @@ top_phyla = tRNA_score_df["Phylum"].value_counts().head(6)
 tRNA_score_df = tRNA_score_df[tRNA_score_df['Phylum'].isin(top_phyla.index)]
 
 nr_bins = 30
-min_value = tRNA_score_df["tRNA_score"].min()
-max_value = tRNA_score_df["tRNA_score"].max() + 0.001 # so all values fall inside the max_value
+min_value = tRNA_score_df[tRNA_score].min()
+max_value = tRNA_score_df[tRNA_score].max() + 0.001 # so all values fall inside the max_value
 bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
 # DOWNSAMPLE NO_MATCH
@@ -84,13 +85,13 @@ matches_phylum_counts = matches_phylum_counts.reindex(top_phyla.index).fillna(0)
 
 # HISTOGRAM
 g = sns.FacetGrid(tRNA_downsampled_df, col="Phylum", col_order=top_phyla.index, sharey=False, col_wrap=3, height=4, aspect=1.2)
-g.map_dataframe(sns.histplot, x="tRNA_score", hue = "Macth_status", hue_order=["No_match", "Match"], multiple="stack", bins=bin_edges)
+g.map_dataframe(sns.histplot, x=tRNA_score, hue = "Match_status", hue_order=["No_match", "Match"], multiple="stack", bins=bin_edges)
 g.set_axis_labels("tRNA score", "Number of Bacteria")
 
 for ax, phylum in zip(g.axes.flat, phylum_counts.index):
     ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})")
         
-g.set(xlim=(min_value - 0.001, max_value + 0.001))
+g.set(xlim=(min_value - 0.01, max_value + 0.01))
     
 plt.subplots_adjust(top=0.85)
 
@@ -102,7 +103,8 @@ if matches == 1: # if matches exists
     plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
 else:
     plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
-     
+
+plt.savefig(f'/home/enyaa/gene_genome/histogram_{gene_name}.png')     
 plt.close(g.figure)
 
 print(f"Histogram created for {gene_name}!")

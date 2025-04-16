@@ -18,17 +18,18 @@ def tRNA_score_one_sided(gene_dist, genome_dist):
             matched = False
             for genome_codon, genome_value in genome_dist.items():
                 if genome_codon[:2] == first_two:
-                    if third == "T" and genome_codon[2] == "C":
+                    if third == "T" and genome_codon[2] == "C": # RÄTT
                         difference = max(0, gene_value - genome_value)
                         codon_scores.append(0.2*difference)
                         matched = True
                         break
-                    elif third == "G" and genome_codon[2] == "A":
+                    elif third == "G" and genome_codon[2] == "A": # RÄTT
                         difference = max(0, gene_value - genome_value)
                         codon_scores.append(0.2*difference)
                         matched = True
                         break
-                    elif genome_codon[2] == "T" and third != "G":
+                    elif genome_codon[2] == "T" and third != "G": # RÄTT - T på genome betyder A på antikodon tRNA vilket betyder att det kan bli till ett I på tRNA
+                        # KANSKE ATT DENNA SKA LIGGA ETT STEG ÅT VÄNSTER SOM EN NY IF-SATS ?
                         difference = max(0, gene_value - genome_value)
                         codon_scores.append(0.9*difference)
                         matched = True
@@ -63,6 +64,7 @@ def tRNA_score_two_sided(gene_dist, genome_dist):
                         matched = True
                         break
                     elif genome_codon[2] == "T" and third != "G":
+                        # KANSKE ATT DENNA SKA LIGGA ETT STEG ÅT VÄNSTER SOM EN NY IF-SATS ?
                         difference = abs(gene_value - genome_value)
                         codon_scores.append(0.9*difference)
                         matched = True

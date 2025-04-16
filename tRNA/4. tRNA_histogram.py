@@ -4,7 +4,7 @@ import seaborn as sns
 import os
 import numpy as np
 
-gene_name = "AAC6_Ie_APH2_Ia"
+gene_name = "floR"
 tRNA_score = "tRNA_score_two_sided"
 
 if "/" in gene_name:
@@ -56,9 +56,11 @@ for phylum, phylum_df in tRNA_score_df.groupby("Phylum"): # phylum - name of phy
         if match_count == 0:
             keep_size = 10000
         elif match_count < 100:
-            keep_size = 2000
+            #keep_size = 2000
+            keep_size = 1000
         elif match_count < 3000:
-            keep_size = 10000
+            #keep_size = 10000
+            keep_size = 5000
         else:
             keep_size = match_count * 3
     else:

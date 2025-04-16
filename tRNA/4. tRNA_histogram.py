@@ -7,7 +7,7 @@ import numpy as np
 gene_name = "tet(Q)"
 
 if "/" in gene_name:
-    gene_name = gene_name.rename("/", "?")
+    gene_name = gene_name.replace("/", "?")
     
 file_path = f"/storage/enyaa/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
 tRNA_score_df = pd.read_csv(file_path)
@@ -25,6 +25,11 @@ else: # If taxonomy file do not exist
     tRNA_score_df["Match_status"] = "No_match"
     matches = 0
     
+no_match_count = tRNA_score_df["Match_status"].value_counts().get("Match", 0)    
+if no_match_count == 0:
+        print("No matches for gene:", gene_name)
+        matches = 0
+
 # Filter for top phyla
 top_phyla = tRNA_score_df["Phylum"].value_counts().head(6)
 tRNA_score_df = tRNA_score_df[tRNA_score_df['Phylum'].isin(top_phyla.index)]
@@ -34,7 +39,7 @@ min_value = tRNA_score_df["tRNA_score"].min()
 max_value = tRNA_score_df["tRNA_score"].max() + 0.001 # so all values fall inside the max_value
 bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
-# DOWNSAMPLE
+# DOWNSAMPLE NO_MATCH
 downsampled_no_matches = [] # will become a list of dataframes
 tRNA_score_df = tRNA_score_df.copy()
 tRNA_score_df["Phylum"] = tRNA_score_df["Phylum"].astype(str)
@@ -99,3 +104,5 @@ else:
     plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
      
 plt.close(g.figure)
+
+print(f"Histogram created for {gene_name}!")

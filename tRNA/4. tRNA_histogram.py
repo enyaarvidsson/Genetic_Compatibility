@@ -4,8 +4,8 @@ import seaborn as sns
 import os
 import numpy as np
 
-gene_name = "AAC6_30_AAC6_Ib"
-tRNA_score = "tRNA_score_one_sided"
+gene_name = "AAC6_Ie_APH2_Ia"
+tRNA_score = "tRNA_score_two_sided"
 
 if "/" in gene_name:
     gene_name = gene_name.replace("/", "?")
@@ -98,13 +98,20 @@ plt.subplots_adjust(top=0.85)
  # Add title
 if "?" in gene_name:
     gene_name = gene_name.replace("?", "/")
-    
-if matches == 1: # if matches exists
-    plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
-else:
-    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
 
-plt.savefig(f'/home/enyaa/gene_genome/histogram_{gene_name}.png')     
+if tRNA_score == "tRNA_score_one_sided":
+    tRNA_score_title = "one-sided"
+    tRNA_score_nr = "1"
+else:
+    tRNA_score_title = "two-sided"
+    tRNA_score_nr = "2"
+
+if matches == 1: # if matches exists
+    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title}", ha="center", fontsize=14)
+else:
+    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title} - NO MATCHES", ha="center", fontsize=14)     
+
+plt.savefig(f'/home/enyaa/gene_genome/histogram{tRNA_score_nr}_{gene_name}.png')     
 plt.close(g.figure)
 
-print(f"Histogram created for {gene_name}!")
+print(f"Histogram created for {gene_name} {tRNA_score_title}")

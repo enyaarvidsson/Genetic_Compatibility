@@ -62,7 +62,7 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=num_parallel_jobs) as ex
 
 # Koden gav error-meddelanden så många filer är tomma
 # Hitta bacteria ids som ej har gjorts trna scan på
-
+'''
 # Get all filenames in the directory
 files_in_dir = set(os.listdir("/storage/jolunds/REVISED/tRNA/"))
 
@@ -102,11 +102,12 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=num_parallel_jobs) as ex
 end_time = time.time()
 total_time = (end_time-start_time)/60
 print(f"Done runnning tRNAscan, total time {total_time} minutes")
+'''
 
 
 # Remove genomes with few tRNAs found
 directory = "/storage/jolunds/REVISED/tRNA/tRNA_results/"
-row_threshold = 15 
+row_threshold = 35
 
 # Loop through files, count rows and remove files with rows < 15
 for filename in tqdm(os.listdir(directory), desc="Processing files"):
@@ -121,3 +122,4 @@ for filename in tqdm(os.listdir(directory), desc="Processing files"):
                 os.remove(filepath)
         except Exception as e:
             print(f"Error with {filename}: {e}")
+            

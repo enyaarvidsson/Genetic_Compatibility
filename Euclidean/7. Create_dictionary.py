@@ -3,12 +3,14 @@
 import os
 import pandas as pd
 import pickle
+from tqdm import tqdm
 
-'''
-directory= "/storage/enyaa/REVISED/KMER/gene_kmer"
+
+#directory= "/storage/enyaa/REVISED/KMER/gene_kmer"
+directory= "/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/gene_kmer_500bp"
 kmer_dict = {} # empty dictionary
 
-for filename in os.listdir(directory): # goes through filenames in directory
+for filename in tqdm(os.listdir(directory), desc="Processing genes"): # goes through filenames in directory
     filepath = os.path.join(directory, filename) # creates the filepath
     gene_name = filename.split("_kmer_counts.txt")[0] # gets the gene name
     
@@ -26,7 +28,8 @@ for filename in os.listdir(directory): # goes through filenames in directory
 
 
 # Save dictionary to a pickle-file:
-save_path = "/storage/enyaa/REVISED/KMER/gene_dist/gene_kmer_distributions.pkl"    
+#save_path = "/storage/enyaa/REVISED/KMER/gene_dist/gene_kmer_distributions.pkl"   
+save_path = "/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/gene_kmer_distributions_500bp.pkl"  
 with open(save_path, "wb") as f:
     pickle.dump(kmer_dict, f)
 
@@ -53,3 +56,4 @@ save_path = "/storage/enyaa/REVISED/KMER/genome_dist/genome_kmer_distributions_1
 with open(save_path, "wb") as f:
     pickle.dump(kmer_dict, f)
     
+'''

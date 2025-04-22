@@ -7,6 +7,7 @@ import shutil
 import os
 import time
 import concurrent.futures
+from tqdm import tqdm
 
 start_time = time.time()
 
@@ -101,3 +102,22 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=num_parallel_jobs) as ex
 end_time = time.time()
 total_time = (end_time-start_time)/60
 print(f"Done runnning tRNAscan, total time {total_time} minutes")
+
+
+# Remove genomes with few tRNAs found
+directory = "/storage/jolunds/REVISED/tRNA/tRNA_results/"
+row_threshold = 15 
+
+# Loop through files, count rows and remove files with rows < 15
+for filename in tqdm(os.listdir(directory), desc="Processing files"):
+    filepath = os.path.join(directory, filename)
+    if os.path.isfile(filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                for i, _ in enumerate(f, start=1):
+                    if i >= row_threshold:
+                        break
+            if i < row_threshold:
+                os.remove(filepath)
+        except Exception as e:
+            print(f"Error with {filename}: {e}")

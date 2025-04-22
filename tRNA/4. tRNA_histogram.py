@@ -4,7 +4,8 @@ import seaborn as sns
 import os
 import numpy as np
 
-gene_name = "floR"
+
+gene_name = "tet(Q)" 
 tRNA_score = "tRNA_score_two_sided"
 
 if "/" in gene_name:

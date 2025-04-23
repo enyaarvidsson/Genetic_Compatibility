@@ -11,7 +11,7 @@ from Bio import SeqIO
 
 # Count how many times each codon appears
 def count_codons(sequence):
-    sequence = re.sub(r'[^ATGC]', '', sequence.upper()) 
+    sequence = re.sub(r'^ATGCRYWSKMBDHVN]', '', sequence.upper()) 
     codons = [sequence[i:i+3] for i in range(0, len(sequence), 3)]
     return Counter(codon for codon in codons) #if len(codon) == 3)
 
@@ -32,6 +32,6 @@ gene_codons_df = pd.DataFrame(rows)
 print(gene_codons_df)
 
 # Save to csv-file
-output_file = '/storage/enyaa/REVISED/tRNA/codons_genes.csv'
+output_file = '/storage/jolunds/REVISED/tRNA/codons_genes.csv'
 gene_codons_df.to_csv(output_file, index=False)
 

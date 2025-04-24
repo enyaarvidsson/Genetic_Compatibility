@@ -32,10 +32,9 @@ for bacteria_id in tqdm(bacteria_ids["Bacteria_ID"], desc="Processing genomes"):
         names=["Sequence_name", "tRNA_nr", "Begin", "End", "tRNA_type",
                "Anticodon", "Intron_begin", "Intron_end", "Score", "Comment"]
     )
-    
-    counts = Counter(tRNA_df["Anticodon"])
-    counts["Bacteria_ID"] = bacteria_id
-    all_counts.append(counts)
+    anticodon_counts = tRNA_df["Anticodon"].value_counts()
+    anticodon_counts["Bacteria_ID"] = bacteria_id
+    all_counts.append(anticodon_counts)
 
 # Create DataFrame with anticodons as columns
 anticodon_counts_df = pd.DataFrame(all_counts).fillna(0)
@@ -49,14 +48,27 @@ top_phyla = ["Actinomycetota", "Bacillota", "Bacteroidota", "Campylobacterota", 
 anticodon_counts_df = anticodon_counts_df[anticodon_counts_df["Phylum"].isin(top_phyla)]
 
 # Save dataframe
-save_path = "/storage/jolunds/REVISED/tRNA/anticodon_counts.csv"
-anticodon_counts_df.to_csv(save_path)'''
+save_path = "/storage/jolunds/REVISED/tRNA/anticodon_counts_new.csv"
+anticodon_counts_df.to_csv(save_path)
+'''
 
 
-
-file = "/storage/jolunds/REVISED/tRNA/anticodon_counts.csv"
+'''file = "/storage/jolunds/REVISED/tRNA/anticodon_counts_new.csv"
 anticodon_counts_df = pd.read_csv(file, index_col=0)
 
+print(anticodon_counts_df.head())
+codons_over_15 = anticodon_counts_df[anticodon_counts_df['TCC'] > 15]
+
+print(codons_over_15)'''
+
+test = pd.read_csv("/storage/jolunds/REVISED/tRNA/tRNA_results/GCA_020496255.1_trnascan.txt", sep="\t", comment="#", skiprows=3, header=None,)
+
+
+test.columns=["Sequence_name", "tRNA_nr", "Begin", "End", "tRNA_type",
+               "Anticodon", "Intron_begin", "Intron_end", "Score", "Comment"]
+anticodon_counts = test["Anticodon"].value_counts()
+print(anticodon_counts)
+'''
 id_columns = ["Bacteria_ID", "Phylum"]
 
 # Identify anticodon columns (exclude ID columns)
@@ -81,8 +93,8 @@ for phylum in top_phyla:
     sns.boxplot(data=melted_df, x="Anticodon", y="Count")
     plt.title(f"Anticodon Counts in {phylum}")
     plt.xticks(rotation=90)
-    plt.savefig(f"/home/jolunds/newtest/boxplot_{phylum}.png")
-
+    plt.savefig(f"/home/jolunds/newtest/new_boxplot_{phylum}.png")
+'''
 '''# Boxplot
 phylum = "Actinomycetota"
 

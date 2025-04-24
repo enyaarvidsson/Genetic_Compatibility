@@ -87,7 +87,7 @@ gene_name_file = "/storage/enyaa/REVISED/gene_names.txt"
 gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
 
 # Load file with counted codons for each gene 
-gene_codons_file = '/storage/enyaa/REVISED/tRNA/codons_genes.csv'
+gene_codons_file = '/storage/jolunds/REVISED/tRNA/codons_genes_filtered.csv'
 gene_codons_df = pd.read_csv(gene_codons_file)
 
 # Remove stop codons 
@@ -127,8 +127,10 @@ for bacteria_id in bacteria_ids:
     
     # Value counts and reverse complement
     anticodon_counts = tRNA_df["Anticodon"].value_counts()
-    codons = anticodon_counts.index.to_series().apply(lambda ac: str(Seq(ac).reverse_complement())) #mapping
-    frequencies = anticodon_counts / anticodon_counts.sum()
+    valid_anticodon_counts = anticodon_counts[anticodon_counts.index.str.fullmatch(r'[ACGT]+')] # Remove anticodons containing other letters than ACTG
+    
+    codons = valid_anticodon_counts.index.to_series().apply(lambda ac: str(Seq(ac).reverse_complement())) # Mapping
+    frequencies = valid_anticodon_counts / valid_anticodon_counts.sum()
     codon_freq = dict(zip(codons, frequencies))
     bacteria_codon_freq[bacteria_id] = codon_freq
 
@@ -156,7 +158,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
    
     # Save
     if "/" in gene_name:
-        gene_name = gene_name.rename("/", "?")
+        gene_name = gene_name.replace("/", "?")
         
     save_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
     gene_tRNA_df.to_csv(save_path, index=False)

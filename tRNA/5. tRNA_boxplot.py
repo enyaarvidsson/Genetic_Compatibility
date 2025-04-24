@@ -53,22 +53,9 @@ anticodon_counts_df.to_csv(save_path)
 '''
 
 
-'''file = "/storage/jolunds/REVISED/tRNA/anticodon_counts_new.csv"
+file = "/storage/jolunds/REVISED/tRNA/anticodon_counts_new.csv"
 anticodon_counts_df = pd.read_csv(file, index_col=0)
 
-print(anticodon_counts_df.head())
-codons_over_15 = anticodon_counts_df[anticodon_counts_df['TCC'] > 15]
-
-print(codons_over_15)'''
-
-test = pd.read_csv("/storage/jolunds/REVISED/tRNA/tRNA_results/GCA_020496255.1_trnascan.txt", sep="\t", comment="#", skiprows=3, header=None,)
-
-
-test.columns=["Sequence_name", "tRNA_nr", "Begin", "End", "tRNA_type",
-               "Anticodon", "Intron_begin", "Intron_end", "Score", "Comment"]
-anticodon_counts = test["Anticodon"].value_counts()
-print(anticodon_counts)
-'''
 id_columns = ["Bacteria_ID", "Phylum"]
 
 # Identify anticodon columns (exclude ID columns)
@@ -94,7 +81,7 @@ for phylum in top_phyla:
     plt.title(f"Anticodon Counts in {phylum}")
     plt.xticks(rotation=90)
     plt.savefig(f"/home/jolunds/newtest/new_boxplot_{phylum}.png")
-'''
+
 '''# Boxplot
 phylum = "Actinomycetota"
 

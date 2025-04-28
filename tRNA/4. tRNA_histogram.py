@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 # HEJ!
-gene_name = "tet(Q)" 
+gene_name = "floR" 
 tRNA_score = "tRNA_score_two_sided"
 
 if "/" in gene_name:
@@ -55,7 +55,7 @@ for phylum, phylum_df in tRNA_score_df.groupby("Phylum"): # phylum - name of phy
     # How many no_matches to keep
     if matches == 1: # if matches exists
         if match_count == 0:
-            keep_size = 10000
+            keep_size = 5000
         elif match_count < 100:
             #keep_size = 2000
             keep_size = 1000

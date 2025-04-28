@@ -12,7 +12,7 @@ def tRNA_score_one_sided(gene_dist, genome_dist):
     for gene_codon, gene_value in gene_dist.items(): 
         if gene_codon in genome_dist:
             difference = max(0, gene_value-genome_dist[gene_codon])
-            codon_scores.append(10 * (difference ** 2))
+            codon_scores.append(1 * (difference ** 2))
         else:
             first_two = gene_codon[:2]
             third = gene_codon[2]
@@ -23,22 +23,22 @@ def tRNA_score_one_sided(gene_dist, genome_dist):
                 if genome_codon[:2] == first_two:
                     if third == "T" and genome_codon[2] == "C": # RÄTT
                         difference = max(0, gene_value - genome_value)
-                        codon_scores.append(20 * (difference ** 2))
+                        codon_scores.append(2 * (difference ** 2))
                         matched = True
                         break
                     elif third == "G" and genome_codon[2] == "A": # RÄTT
                         difference = max(0, gene_value - genome_value)
-                        codon_scores.append(20 * (difference ** 2))
+                        codon_scores.append(2 * (difference ** 2))
                         matched = True
                         break
                     elif genome_codon[2] == "T" and third != "G": # RÄTT - T på genome betyder A på antikodon tRNA vilket betyder att det kan bli till ett I på tRNA
                         # KANSKE ATT DENNA SKA LIGGA ETT STEG ÅT VÄNSTER SOM EN NY IF-SATS ?
                         difference = max(0, gene_value - genome_value)
-                        codon_scores.append(40 * (difference ** 2))
+                        codon_scores.append(4 * (difference ** 2))
                         matched = True
                         break
             if not matched:
-                codon_scores.append(50 * (gene_value ** 2))
+                codon_scores.append(5 * (gene_value ** 2))
 
     return sum(codon_scores)
 
@@ -47,7 +47,7 @@ def tRNA_score_two_sided(gene_dist, genome_dist):
     for gene_codon, gene_value in gene_dist.items(): 
         if gene_codon in genome_dist:
             difference = abs(gene_value-genome_dist[gene_codon])
-            codon_scores.append(10 * (difference ** 2))
+            codon_scores.append(1 * (difference ** 2))
         else:
             first_two = gene_codon[:2]
             third = gene_codon[2]
@@ -58,25 +58,25 @@ def tRNA_score_two_sided(gene_dist, genome_dist):
                 if genome_codon[:2] == first_two:
                     if third == "T" and genome_codon[2] == "C":
                         difference = abs(gene_value - genome_value)
-                        codon_scores.append(20 * (difference ** 2))
+                        codon_scores.append(2 * (difference ** 2))
                         matched = True
                         break
                     elif third == "G" and genome_codon[2] == "A":
                         difference = abs(gene_value - genome_value)
-                        codon_scores.append(20 * (difference ** 2))
+                        codon_scores.append(2 * (difference ** 2))
                         matched = True
                         break
                     elif genome_codon[2] == "T" and third != "G":
                         difference = abs(gene_value - genome_value)
-                        codon_scores.append(40 * (difference ** 2))
+                        codon_scores.append(4 * (difference ** 2))
                         matched = True
                         break
             if not matched:
-                codon_scores.append(50 * (gene_value ** 2))
+                codon_scores.append(5 * (gene_value ** 2))
                 
     for genome_codon, genome_value in genome_dist.items():
         if genome_codon not in gene_dist:
-            codon_scores.append(10 * (genome_value ** 2))
+            codon_scores.append(1 * (genome_value ** 2))
 
     return sum(codon_scores)
 
@@ -160,7 +160,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
         
-    save_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
+    save_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv"
     gene_tRNA_df.to_csv(save_path, index=False)
 
 end_time = time.time()

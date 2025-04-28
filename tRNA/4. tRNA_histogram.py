@@ -4,7 +4,7 @@ import seaborn as sns
 import os
 import numpy as np
 
-
+# HEJ!
 gene_name = "tet(Q)" 
 tRNA_score = "tRNA_score_two_sided"
 

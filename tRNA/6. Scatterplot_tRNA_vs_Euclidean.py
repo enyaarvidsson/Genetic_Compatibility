@@ -5,9 +5,8 @@ import os
 import seaborn as sns
 from scipy.stats import spearmanr
 
-# FÖR GAMLA tRNA SCORE !!!
 
-gene_name = "floR" 
+gene_name = "AcrF" 
 tRNA_score = "tRNA_score_one_sided"
 
 if "/" in gene_name:
@@ -15,7 +14,7 @@ if "/" in gene_name:
 
 
 # tRNA SCORE ------------------
-filepath_tRNA = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
+filepath_tRNA = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv"
 tRNA_score_df = pd.read_csv(filepath_tRNA)
 
 # only top phyla

@@ -250,7 +250,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
     taxonomy_gene_df = pd.read_csv(taxonomy_path)
     matching_df = taxonomy_gene_df[['Bacteria_ID', 'Phylum']]
 
-    top_phyla = ['Pseudomonadota', 'Bacillota', 'Actinomycetota', 'Bacteroidota', 'Cyanobacteriota', 'Campylobacterota']
+    top_phyla = ['Pseudomonadota', 'Actinomycetota', 'Bacillota', 'Bacteroidota', 'Campylobacterota', 'Cyanobacteriota']
     matching_df = matching_df[matching_df['Phylum'].isin(top_phyla)]
 
     # filter to only include matching bacteria
@@ -281,22 +281,24 @@ df_plot = pd.DataFrame({
 
 # Scatterplot:
 plt.figure(figsize=(8, 6))
-sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_ratio', hue='Phylum', palette='Set2', s=10)
+#sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_ratio', s=10)
+plt.scatter(data=df_plot, x='Euclidean_distance', y='GC_ratio', alpha=1, s=10)
 #plt.scatter(euclidean_distances_all, gc_diff_all, alpha=1, s=10)
-plt.xlabel("Euclidean distance")
-plt.ylabel("GC-ratio")
-plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
-plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xlabel("Euclidean distance", fontsize=16)
+plt.ylabel("GC-ratio", fontsize=16)
+plt.tick_params(axis='both', labelsize=14)
+#plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
+#plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 plt.grid(True)
-plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_ratio_test.png') 
+plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_ratio.png') 
 plt.close()
 
 
 end_time = time.time()
 total_time = (end_time - start_time)/60
 print(f"Scatterplot ratio created in: {total_time} minutes!")
-'''
+#'''
 
 
 
@@ -357,7 +359,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
     taxonomy_gene_df = pd.read_csv(taxonomy_path)
     matching_df = taxonomy_gene_df[['Bacteria_ID', 'Phylum']]
 
-    top_phyla = ['Pseudomonadota', 'Bacillota', 'Actinomycetota', 'Bacteroidota', 'Cyanobacteriota', 'Campylobacterota']
+    top_phyla = ['Pseudomonadota', 'Actinomycetota', 'Bacillota', 'Bacteroidota', 'Campylobacterota', 'Cyanobacteriota']
     matching_df = matching_df[matching_df['Phylum'].isin(top_phyla)]
 
     # filter to only include matching bacteria
@@ -388,15 +390,17 @@ df_plot = pd.DataFrame({
 
 # Scatterplot:
 plt.figure(figsize=(8, 6))
-sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_difference', hue='Phylum', palette='Set2', s=10)
+#sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_ratio', s=10)
+plt.scatter(data=df_plot, x='Euclidean_distance', y='GC_difference', alpha=1, s=10)
 #plt.scatter(euclidean_distances_all, gc_diff_all, alpha=1, s=10)
-plt.xlabel("Euclidean distance")
-plt.ylabel("GC-difference")
-plt.title("GC-difference vs euclidean distance for matching genes and genomes")
+plt.xlabel("Euclidean distance", fontsize=16)
+plt.ylabel("GC-difference", fontsize=16)
+plt.tick_params(axis='both', labelsize=14)
+#plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
 #plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 plt.grid(True)
-plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_diff_test.png') 
+plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_diff.png') 
 plt.close()
 
 

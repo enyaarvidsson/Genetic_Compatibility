@@ -4,14 +4,18 @@ import seaborn as sns
 import os
 import numpy as np
 
-# HEJ!
-gene_name = "tet(Q)" 
-tRNA_score = "tRNA_score_two_sided"
+
+gene_name = "NDM-1" 
+tRNA_score = "tRNA_score_one_sided"
+
+
+np.random.seed(42)
 
 if "/" in gene_name:
     gene_name = gene_name.replace("/", "?")
-    
-file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
+
+file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv"  
+#file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
 tRNA_score_df = pd.read_csv(file_path)
 
 # Load taxonomy results and count matches
@@ -36,10 +40,12 @@ if no_match_count == 0:
 top_phyla = tRNA_score_df["Phylum"].value_counts().head(6)
 tRNA_score_df = tRNA_score_df[tRNA_score_df['Phylum'].isin(top_phyla.index)]
 
+'''
 nr_bins = 30
 min_value = tRNA_score_df[tRNA_score].min()
 max_value = tRNA_score_df[tRNA_score].max() + 0.001 # so all values fall inside the max_value
 bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
+'''
 
 # DOWNSAMPLE NO_MATCH
 downsampled_no_matches = [] # will become a list of dataframes
@@ -55,7 +61,7 @@ for phylum, phylum_df in tRNA_score_df.groupby("Phylum"): # phylum - name of phy
     # How many no_matches to keep
     if matches == 1: # if matches exists
         if match_count == 0:
-            keep_size = 10000
+            keep_size = 5000
         elif match_count < 100:
             #keep_size = 2000
             keep_size = 1000
@@ -86,6 +92,13 @@ matches_phylum_counts = tRNA_downsampled_df[tRNA_downsampled_df['Match_status'] 
 matches_phylum_counts = matches_phylum_counts.reindex(top_phyla.index).fillna(0).astype(int)
 
 
+nr_bins = 30
+min_value = tRNA_downsampled_df[tRNA_score].min()
+max_value = tRNA_downsampled_df[tRNA_score].max() + 0.001 # so all values fall inside the max_value
+bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
+
+print(max_value)
+
 # HISTOGRAM
 g = sns.FacetGrid(tRNA_downsampled_df, col="Phylum", col_order=top_phyla.index, sharey=False, col_wrap=3, height=4, aspect=1.2)
 g.map_dataframe(sns.histplot, x=tRNA_score, hue = "Match_status", hue_order=["No_match", "Match"], multiple="stack", bins=bin_edges)
@@ -94,7 +107,7 @@ g.set_axis_labels("tRNA score", "Number of Bacteria")
 for ax, phylum in zip(g.axes.flat, phylum_counts.index):
     ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})")
         
-g.set(xlim=(min_value - 0.01, max_value + 0.01))
+g.set(xlim=(min_value - 0.01, max_value))
     
 plt.subplots_adjust(top=0.85)
 

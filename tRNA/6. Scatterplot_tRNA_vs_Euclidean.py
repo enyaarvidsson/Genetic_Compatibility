@@ -4,10 +4,14 @@ import pandas as pd
 import os
 import seaborn as sns
 from scipy.stats import spearmanr
+import numpy as np
 
 
-gene_name = "AcrF" 
+gene_name = "NDM-1" 
 tRNA_score = "tRNA_score_one_sided"
+
+
+np.random.seed(42)
 
 if "/" in gene_name:
     gene_name = gene_name.replace("/", "?")
@@ -41,7 +45,36 @@ if no_match_count == 0:
 
 
 # ONLY MATHCES ----------------
-tRNA_score_df = tRNA_score_df[tRNA_score_df["Match_status"] == 'Match']
+#tRNA_score_df = tRNA_score_df[tRNA_score_df["Match_status"] == 'Match']
+
+
+# DOWNSAMPLE NO-MATCHES -------
+tRNA_score_downsampled = [] # will become a list of dataframes
+
+match_count = (tRNA_score_df["Match_status"] == "Match").sum()
+
+# create a df for match and a df for no_match
+matches_df = tRNA_score_df[tRNA_score_df["Match_status"] == "Match"]
+no_matches_df = tRNA_score_df[tRNA_score_df["Match_status"] == "No_match"]  
+
+# How many no_matches to keep
+if matches == 1: # if matches exists
+    if match_count < 100:
+        keep_size = 100
+    else:
+        keep_size = match_count
+else:
+    print("No matches") 
+
+# Downsample no_matches
+if keep_size > len(no_matches_df): 
+    keep_size = len(no_matches_df)
+downsampled_no_matches_df = no_matches_df.iloc[np.random.choice(len(no_matches_df), keep_size, replace=False)]
+
+# Append both "Match" and downsampled "No_match" bacteria
+tRNA_score_downsampled.append(pd.concat([matches_df, downsampled_no_matches_df]))
+
+tRNA_score_downsampled_df = pd.concat(tRNA_score_downsampled, ignore_index=True)
 
 
 # EUCLIDEAN DISTANCE ----------
@@ -50,7 +83,7 @@ euclidean_df = pd.read_pickle(filepath_eu)
 
 
 # MERGE THEM TOGETHER ----------
-tRNA_and_euclidean_df = pd.merge(tRNA_score_df, euclidean_df, on='Bacteria_ID', how='inner')
+tRNA_and_euclidean_df = pd.merge(tRNA_score_downsampled_df, euclidean_df, on='Bacteria_ID', how='inner')
 
 
 # SPEARMAN CORRELATION --------
@@ -65,9 +98,11 @@ sns.scatterplot(
     data=tRNA_and_euclidean_df,
     x='Euclidean_distance',
     y=tRNA_score,   
-    #hue='Match_status',
-    s=20,
-    color='darkorange'
+    hue='Match_status',
+    hue_order=["No_match", "Match"],
+    alpha=1,
+    s=10
+    #color='darkorange'
 )
 
 # Add title
@@ -81,7 +116,8 @@ else:
     tRNA_score_title = "two-sided"
     tRNA_score_nr = "2"
  
-plt.title(f'Matches for {gene_name} ({tRNA_score_title}) - spearman: {correlation:.2f} p={p_value:.2f}')
+#plt.title(f'Matches for {gene_name} ({tRNA_score_title}) - spearman: {correlation:.2f} p={p_value:.2f}')
+plt.title(f'Matches for {gene_name} ({tRNA_score_title})')
 plt.xlabel('Euclidean distance')
 plt.ylabel('tRNA score')
 

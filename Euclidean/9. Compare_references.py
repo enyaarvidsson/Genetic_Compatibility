@@ -72,7 +72,7 @@ for gene in compatible_df['Gene_name'].unique():
     gene_euclidean_df = gene_euclidean_df[gene_euclidean_df['Bacteria_ID'].isin(bacteria_ids)]
     euclidean_df_list.append(gene_euclidean_df)
     
-    tRNA_filepath = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene}.csv"
+    tRNA_filepath = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene}.csv"
     gene_tRNA_df = pd.read_csv(tRNA_filepath)
     gene_tRNA_df.insert(0, 'Gene_name', gene) # Add gene name column
     gene_tRNA_df = gene_tRNA_df[gene_tRNA_df['Bacteria_ID'].isin(bacteria_ids)]
@@ -102,7 +102,7 @@ incomp_bacteria_id = list(gram_positive_bacteria["Bacteria_ID"])
 
 random.seed(42)
 incomp_bacteria_id = random.sample(incomp_bacteria_id, k=10_000)
-incomp_gene_names = ["NDM", "IMP", "GIM", "SPM", "VIM"] #Metallo betalaktamases 
+incomp_gene_names = ["NDM", "IMP", "VIM"] #Metallo betalaktamases 
 
 # Ladda gene namn
 with open("/storage/jolunds/REVISED/gene_names.txt", "r") as f:
@@ -126,7 +126,7 @@ for gene in incomp_genes:
     #append
     incomp_euclidean_list.append(gene_euclidean_df)
     
-    tRNA_filepath = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene}.csv"
+    tRNA_filepath = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene}.csv"
     gene_tRNA_df = pd.read_csv(tRNA_filepath)
     gene_tRNA_df.insert(0, 'Gene_name', gene) # Add gene name column
     gene_tRNA_df = gene_tRNA_df[gene_tRNA_df['Bacteria_ID'].isin(incomp_bacteria_id)]
@@ -165,7 +165,7 @@ reference_tRNA_df = pd.concat([comp_tRNA_df, sample_incomp_tRNA_df], ignore_inde
 # Plot results
 # Euclidean 
 plt.figure(figsize=(10, 6))
-g = sns.histplot(data=reference_euclidean_df, x='Euclidean_distance', hue='Reference', multiple='stack', bins=30, palette={'Compatible': 'green', 'Incompatible': 'purple'})
+g = sns.histplot(data=reference_euclidean_df, x='Euclidean_distance', hue='Reference', multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
 
 plt.xlabel("Euclidean distance")
 plt.ylabel("Number of bacteria")
@@ -176,7 +176,7 @@ plt.close()
 
 # tRNA
 plt.figure(figsize=(10, 6))
-sns.histplot(data=reference_tRNA_df, x=tRNA_score, hue='Reference', multiple='stack', bins=30, palette={'Compatible': 'green', 'Incompatible': 'purple'})
+sns.histplot(data=reference_tRNA_df, x=tRNA_score, hue='Reference', multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
 
 plt.xlabel("tRNA score")
 plt.ylabel("Number of bacteria")

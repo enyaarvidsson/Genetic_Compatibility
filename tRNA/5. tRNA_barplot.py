@@ -66,7 +66,33 @@ valid_anticodons = [ac for ac in possible_anticodons if re.fullmatch(r"[ACGT]{3}
 anticodon_counts_df = anticodon_counts_df[id_columns + valid_anticodons]
 
 top_phyla = ["Actinomycetota", "Bacillota", "Bacteroidota", "Campylobacterota", "Cyanobacteriota", "Pseudomonadota"]
+for phylum in top_phyla:
+    # Filter for phylum
+    phylum_df = anticodon_counts_df[anticodon_counts_df["Phylum"] == phylum]
 
+    # Melt into long format
+    melted_df = phylum_df.melt(id_vars=["Bacteria_ID", "Phylum"], 
+                                var_name="Anticodon", 
+                                value_name="Count")
+
+    # Plot mean with standard deviation as error bars
+    plt.figure(figsize=(12, 6))
+    sns.barplot(
+        data=melted_df,
+        x="Anticodon",
+        y="Count",
+        errorbar="sd",
+        capsize=0.1,    
+        err_kws ={'linewidth': 1.5, 'color': 'black'} 
+    )
+
+    plt.title(f"Distribution of anticodons in {phylum}")
+    plt.xticks(rotation=90)
+    plt.ylabel("Mean Count ± SD")
+    plt.xlabel("Anticodon")
+    plt.tight_layout()
+    plt.savefig(f"/home/jolunds/newtest/barplot_{phylum}.png")
+'''
 for phylum in top_phyla:
     phylum_df = anticodon_counts_df[anticodon_counts_df["Phylum"] == phylum]
 
@@ -77,11 +103,11 @@ for phylum in top_phyla:
 
 
     plt.figure(figsize=(12, 6))
-    sns.boxplot(data=melted_df, x="Anticodon", y="Count")
+    sns.boxplot(data=melted_df, x="Anticodon", y="Count", flierprops=dict(marker='o', markersize=3))
     plt.title(f"Anticodon Counts in {phylum}")
     plt.xticks(rotation=90)
     plt.savefig(f"/home/jolunds/newtest/new_boxplot_{phylum}.png")
-
+'''
 '''# Boxplot
 phylum = "Actinomycetota"
 

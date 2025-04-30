@@ -7,6 +7,7 @@ import numpy as np
 import seaborn as sns
 import time
 import os
+from tqdm import tqdm
 
 
 start_time = time.time() # Starting time
@@ -27,19 +28,26 @@ full_taxonomy_df.columns = ["Bacteria_ID", "Phylum"]
 
 
 # PDF -----------------------------------------------
-pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_filtered_correct.pdf")
+pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_500bp.pdf")
 
 
 # FOR EACH GENE_NAME --------------------------------
-for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in alphabetical order
+for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # loops through the gene_names in alphabetical order
 
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
     # EUCLIDEAN DISTANCE for one gene ---------------
-    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl") 
+    #euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl") 
         # euclidean_gene_df - has one column Bacteria_ID with the bacteria_ids, and one column with euclidean distance
+    eu_path = f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
     
+    if not os.path.exists(eu_path): # skip genes that are shorter than 500 bp because those files don't exist
+        continue
+    
+    euclidean_gene_df = pd.read_pickle(eu_path).reset_index(drop=True).T.reset_index() # Switch to long format 
+    euclidean_gene_df.columns = ['Bacteria_ID', 'Euclidean_distance']
+
     # MATCH STATUS (from taxonomy) ------------------
     # Load Taxonomy results
     path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
@@ -89,33 +97,6 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
     bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
     # DOWNSAMPLE NO_MATCH ---------------------------
-    '''
-    # Nr of matches
-    match_count = (euclidean_top_phyla_df["Match_status"] == "Match").sum() 
-    
-    # How many no_matches to keep
-    if matches == 1: # if matches exists
-        if match_count < 100:
-            keep_size = 2000
-        elif match_count < 3000:
-            keep_size = 10000
-        else:
-            keep_size = match_count * 3
-    else:
-        keep_size = 300000 
-
-    # Dataframes for matches and no_matches
-    match_df = euclidean_top_phyla_df[euclidean_top_phyla_df["Match_status"] == "Match"]
-    no_match_df = euclidean_top_phyla_df[euclidean_top_phyla_df["Match_status"] == "No_match"]
-
-    # Downsample no_matches
-    if keep_size > len(no_match_df): # make sure np.random.choice works, so the keep_size is not bigger than the population size
-        keep_size = len(no_match_df)
-    downsampled_no_matches_df = no_match_df.iloc[np.random.choice(len(no_match_df), keep_size, replace=False)]
-
-    downsampled_df = pd.concat([match_df, downsampled_no_matches_df]).reset_index(drop=True)'''
-
-    #'''
     # om man vill göra fast för varje phylum och beroende på hur många matches, gör följande
     downsampled_no_matches = [] # will become a list of dataframes
 
@@ -157,7 +138,6 @@ for gene_name in gene_names_df["Gene_name"]: # loops through the gene_names in a
     # Combine all phyla into the final df
     downsampled_df = pd.concat(downsampled_no_matches, ignore_index=True)
         # downsampled_df contains all matches, but downsampled no_matches
-    #'''
 
     # COUNT NR OF BACTERIA --------------------------
     # in each phylum

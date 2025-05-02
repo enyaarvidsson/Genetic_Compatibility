@@ -8,9 +8,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 
-# ONLY TOP PHYLA
-
-
 
 gene_name = "NDM-1" 
 

@@ -6,6 +6,7 @@ import os
 import numpy as np
 import seaborn as sns
 from Bio import SeqIO
+from tqdm import tqdm
 
 start_time = time.time()
 
@@ -22,28 +23,40 @@ phylum_mapping = full_lineage_df[["Bacteria_ID", "Phylum", "Species"]] # only th
 # Loop through genes in all_genes 
 big_table_list = []
 table_genes_list = []   
-
-for gene_name in all_genes: #sorted(all_genes): 
+tRNA_score = "tRNA_score_one_sided"
+for gene_name in tqdm(all_genes, desc="Processing genes"): #sorted(all_genes): 
     
     if "/" in gene_name: # Just for look-up
         gene_name = gene_name.replace("/", "?")
     
-    # Load euclidean df
-    path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl"
-    gene_euclidean_df = pd.read_pickle(path).reset_index(drop=True) #.T.reset_index() # Switch to long format 
+    # Load euclidean df or tRNA score
+    #path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl" #original
+    #path = f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl" #500bp
+    path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv" #tRNA
+    if not os.path.exists(path):
+        continue 
+    #gene_euclidean_df = pd.read_pickle(path).reset_index(drop=True).T.reset_index() # Switch to long format 
     #gene_euclidean_df.columns = ['Bacteria_ID', 'Euclidean_distance']
+    gene_tRNA_df = pd.read_csv(path)
     
     # Add phylum column
-    phylum_euclidean_df = gene_euclidean_df.merge(phylum_mapping, on=['Bacteria_ID'], how='left')
+    #phylum_euclidean_df = gene_euclidean_df.merge(phylum_mapping, on=['Bacteria_ID'], how='left')
     #print(phylum_euclidean_df.head())
 
     # Find 6 top phylum & filter for top phyla
-    top_phyla = phylum_euclidean_df["Phylum"].value_counts().head(6)
-    phylum_euclidean_df = phylum_euclidean_df[phylum_euclidean_df['Phylum'].isin(top_phyla.index)]
+    #top_phyla = phylum_euclidean_df["Phylum"].value_counts().head(6)
+    #phylum_euclidean_df = phylum_euclidean_df[phylum_euclidean_df['Phylum'].isin(top_phyla.index)]
+    
+    top_phyla = gene_tRNA_df["Phylum"].value_counts().head(6)
+    gene_tRNA_df = gene_tRNA_df[gene_tRNA_df['Phylum'].isin(top_phyla.index)]
     
     # Calculate mean and standard deviation for each phylum and gene
-    phylum_stats = phylum_euclidean_df.groupby(["Phylum"])["Euclidean_distance"].agg(['mean', 'std']).fillna(0)
+    #phylum_stats = phylum_euclidean_df.groupby(["Phylum"])["Euclidean_distance"].agg(['mean', 'std']).fillna(0)
+    #phylum_stats_reset = phylum_stats.reset_index()
+    
+    phylum_stats = gene_tRNA_df.groupby(["Phylum"])[tRNA_score].agg(['mean', 'std']).fillna(0)
     phylum_stats_reset = phylum_stats.reset_index()
+    
         # has the genes as rows, and shows mean and std for each phylum
 
     # Load taxonomy results and count matches
@@ -54,21 +67,34 @@ for gene_name in all_genes: #sorted(all_genes):
         taxonomy_df = taxonomy_df.drop_duplicates() # Remove duplicates (when we have multiple matches in one genome)
         
         matching_df = taxonomy_df[['Bacteria_ID']]
-        phylum_euclidean_df = phylum_euclidean_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left").fillna("No_match") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
-        phylum_counts = phylum_euclidean_df[phylum_euclidean_df["Match_status"] == "Match"].groupby("Phylum").size().reset_index(name="Num_matches")
+        #phylum_euclidean_df = phylum_euclidean_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left").fillna("No_match") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
+        #phylum_counts = phylum_euclidean_df[phylum_euclidean_df["Match_status"] == "Match"].groupby("Phylum").size().reset_index(name="Num_matches")
+        
+        gene_tRNA_df= gene_tRNA_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left").fillna("No_match") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
+        phylum_counts = gene_tRNA_df[gene_tRNA_df["Match_status"] == "Match"].groupby("Phylum").size().reset_index(name="Num_matches")
+        
     else: # If taxonomy file do not exist
         phylum_counts = pd.DataFrame({"Phylum": top_phyla.index.tolist(), "Num_matches": [0] * len(top_phyla)})
-        phylum_euclidean_df["Match_status"] = "No_match"
+        #phylum_euclidean_df["Match_status"] = "No_match"
+        gene_tRNA_df["Match_status"] = "No_match"
+        
+        
     
     # Merge stats and num matches
     gene_table_df = pd.merge(phylum_stats_reset, phylum_counts, on=["Phylum"], how="left").fillna(0) # Add num matches 
     
     # Total mean, minimum value, minimum value for match + species, maximum value for match + species
-    total_mean = phylum_euclidean_df['Euclidean_distance'].mean()
-    minimum_eu = phylum_euclidean_df['Euclidean_distance'].min()
-    maximum_eu = phylum_euclidean_df['Euclidean_distance'].max()
+    #total_mean = phylum_euclidean_df['Euclidean_distance'].mean()
+    #minimum_eu = phylum_euclidean_df['Euclidean_distance'].min()
+    #maximum_eu = phylum_euclidean_df['Euclidean_distance'].max()
     
-    match_df = phylum_euclidean_df[phylum_euclidean_df['Match_status'] == 'Match']
+    total_mean = gene_tRNA_df[tRNA_score].mean()
+    minimum_eu = gene_tRNA_df[tRNA_score].min()
+    maximum_eu = gene_tRNA_df[tRNA_score].max()
+    
+    #match_df = phylum_euclidean_df[phylum_euclidean_df['Match_status'] == 'Match']
+    match_df = gene_tRNA_df[gene_tRNA_df['Match_status'] == 'Match']
+    
     if match_df.empty:
         # Per gene
         min_match = "No matches"
@@ -87,30 +113,42 @@ for gene_name in all_genes: #sorted(all_genes):
         
     else:   
         # Per gene
-        min_row = match_df.loc[match_df['Euclidean_distance'].idxmin(), ['Euclidean_distance', 'Species']]
-        min_match = min_row['Euclidean_distance']
+        #min_row = match_df.loc[match_df['Euclidean_distance'].idxmin(), ['Euclidean_distance', 'Species']]
+        #min_match = min_row['Euclidean_distance']
+        min_row = match_df.loc[match_df[tRNA_score].idxmin(), [tRNA_score, 'Species']]
+        min_match = min_row[tRNA_score]
         min_species = min_row['Species']
         
-        max_row = match_df.loc[match_df['Euclidean_distance'].idxmax(), ['Euclidean_distance', 'Species']]
-        max_match = max_row['Euclidean_distance']
+        #max_row = match_df.loc[match_df['Euclidean_distance'].idxmax(), ['Euclidean_distance', 'Species']]
+        #max_match = max_row['Euclidean_distance']
+        
+        max_row = match_df.loc[match_df[tRNA_score].idxmax(), [tRNA_score, 'Species']]
+        max_match = max_row[tRNA_score]
         max_species = max_row['Species']
         
-        mean_match = match_df['Euclidean_distance'].mean()
+        #mean_match = match_df['Euclidean_distance'].mean()
+        mean_match = match_df[tRNA_score].mean()
         unique_phyla_count = match_df['Phylum'].nunique()
         
         # Per phylum
-        phylum_min_match = match_df.groupby('Phylum')['Euclidean_distance'].min()
-        phylum_max_match = match_df.groupby('Phylum')['Euclidean_distance'].max()
-        phylum_mean_match = match_df.groupby('Phylum')['Euclidean_distance'].mean()
+        #phylum_min_match = match_df.groupby('Phylum')['Euclidean_distance'].min()
+        #phylum_max_match = match_df.groupby('Phylum')['Euclidean_distance'].max()
+        #phylum_mean_match = match_df.groupby('Phylum')['Euclidean_distance'].mean()
         
-        phylum_min_species = match_df.loc[match_df.groupby('Phylum')['Euclidean_distance'].idxmin(), ['Phylum', 'Species']].set_index('Phylum')['Species']
-        phylum_max_species = match_df.loc[match_df.groupby('Phylum')['Euclidean_distance'].idxmax(), ['Phylum', 'Species']].set_index('Phylum')['Species']
+        phylum_min_match = match_df.groupby('Phylum')[tRNA_score].min()
+        phylum_max_match = match_df.groupby('Phylum')[tRNA_score].max()
+        phylum_mean_match = match_df.groupby('Phylum')[tRNA_score].mean()
+        
+        #phylum_min_species = match_df.loc[match_df.groupby('Phylum')['Euclidean_distance'].idxmin(), ['Phylum', 'Species']].set_index('Phylum')['Species']
+        #phylum_max_species = match_df.loc[match_df.groupby('Phylum')['Euclidean_distance'].idxmax(), ['Phylum', 'Species']].set_index('Phylum')['Species']
 
+        phylum_min_species = match_df.loc[match_df.groupby('Phylum')[tRNA_score].idxmin(), ['Phylum', 'Species']].set_index('Phylum')['Species']
+        phylum_max_species = match_df.loc[match_df.groupby('Phylum')[tRNA_score].idxmax(), ['Phylum', 'Species']].set_index('Phylum')['Species']
 
     # Create tables
     if "?" in gene_name:
         gene_name = gene_name.replace("?", "/")
-    table_gene_df = pd.DataFrame({
+    '''table_gene_df = pd.DataFrame({
         'Gene_name': [gene_name],
         'Total_eu_mean': [total_mean],
         'Min_eu': [minimum_eu],
@@ -120,6 +158,19 @@ for gene_name in all_genes: #sorted(all_genes):
         'Max_eu_match': [max_match],
         'Max_Species': [max_species],
         'Mean_eu_matches': [mean_match],
+        'Num_phyla_match': [unique_phyla_count]
+    })'''
+    
+    table_gene_df = pd.DataFrame({
+        'Gene_name': [gene_name],
+        'Mean_tRNA': [total_mean],
+        'Min_tRNA': [minimum_eu],
+        'Max_tRNA': [maximum_eu],
+        'Min_tRNA_match': [min_match],
+        'Min_Species': [min_species],
+        'Max_tRNA_match': [max_match],
+        'Max_Species': [max_species],
+        'Mean_tRNA_matches': [mean_match],
         'Num_phyla_match': [unique_phyla_count]
     })
     
@@ -166,14 +217,20 @@ gene_lengths_df = pd.DataFrame(list(gene_lengths.items()), columns=['Gene_name',
 table_genes_df = table_genes_df.merge(gene_lengths_df, on='Gene_name', how='left')
 
 # Save
-path_bigtable = "/storage/jolunds/REVISED/KMER/big_table_filtered2.csv"
+'''path_bigtable = "/storage/jolunds/REVISED/KMER/big_table_500bp.csv"
 big_table_df.to_csv(path_bigtable, index=False)
-path_table_genes = "/storage/jolunds/REVISED/KMER/table_genes_filtered2.csv"
+path_table_genes = "/storage/jolunds/REVISED/KMER/table_genes_500bp.csv"
 table_genes_df.to_csv(path_table_genes, index=False)
+'''
+path_bigtable = "/storage/jolunds/REVISED/KMER/big_table_tRNA.csv"
+big_table_df.to_csv(path_bigtable, index=False)
+path_table_genes = "/storage/jolunds/REVISED/KMER/table_genes_tRNA.csv"
+table_genes_df.to_csv(path_table_genes, index=False)
+
 
 end_time = time.time()
 total_time = (end_time - start_time)/60
-print(f"Done creating big table with elapsed time: {total_time} minutes")
+print(f"Done creating big tables with elapsed time: {total_time} minutes")
 
 '''
 # Create scatterplot

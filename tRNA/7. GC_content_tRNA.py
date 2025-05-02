@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 # SCATTERPLOT RATIO for matches -----------------------------
 # Calculates the GC-ratio between genes and genomes - only for filtered matches
 # Makes a scatterplot gc-ratio vs tRNA score
-
+'''
 
 tRNA_score = "tRNA_score_one_sided"
 
@@ -53,7 +53,7 @@ gc_ratio_all = []
 for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): 
 
     gene_gc = genes_gc_df.loc[genes_gc_df['Gene_name'] == gene_name, 'GC_content'].values[0]
-
+    
     # ONLY COMPUTE GC-RATIO BETWEEN GENES AND ITS MATCHES
 
     if "/" in gene_name:
@@ -61,6 +61,8 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
 
     tRNA_gene_df = pd.read_csv(f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv") 
         # 70911 rows 
+    tRNA_gene_df = tRNA_gene_df[tRNA_gene_df['Bacteria_ID'].isin(bacteria_ids)]
+        # 67089 rows
 
     filename = f"taxonomy_results_{gene_name}.csv"
     if filename not in available_taxonomy_files:
@@ -69,7 +71,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
 
     taxonomy_path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/{filename}"
     taxonomy_gene_df = pd.read_csv(taxonomy_path)
-    matching_df = taxonomy_gene_df[['Bacteria_ID', 'Phylum']]
+    matching_df = taxonomy_gene_df['Bacteria_ID'] #, 'Phylum']]
 
     # filter to only include matching bacteria
     filtered_tRNA_gene_df = tRNA_gene_df.merge(matching_df, on='Bacteria_ID', how='inner')
@@ -77,14 +79,21 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     if filtered_tRNA_gene_df.empty: 
         #print("No matches for gene:", gene_name)
         continue
-
+    
     filtered_gc_df = bacteria_gc_filtered_df.merge(
         filtered_tRNA_gene_df[['Bacteria_ID']], on='Bacteria_ID', how='inner'
     )
     if filtered_gc_df.empty:
-        #print("här är felet")
+        print("denna ska ej behövas")
         continue
     bacteria_gc = filtered_gc_df['GC_content'].to_numpy()
+
+    #filtered_tRNA_gene_df = filtered_tRNA_gene_df.merge(
+    #    bacteria_gc_filtered_df[['Bacteria_ID', 'GC_content']], on='Bacteria_ID', how='inner'
+    #)
+    #if filtered_tRNA_gene_df.empty:
+    #    continue
+    #bacteria_gc = filtered_tRNA_gene_df['GC_content'].to_numpy()
 
     # Compute GC ratio
     ratio = np.round(gene_gc / bacteria_gc, 4) # array of the ratio for one gene vs all genomes
@@ -112,7 +121,7 @@ else:
     tRNA_score_title = "two-sided"
     tRNA_score_nr = "2"
 
-plt.title(f"GC-ratio vs tRNA score ({tRNA_score_title}) for matching genes and genomes")
+#plt.title(f"GC-ratio vs tRNA score ({tRNA_score_title}) for matching genes and genomes")
 #plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 plt.grid(True)
@@ -124,13 +133,13 @@ end_time = time.time()
 total_time = (end_time - start_time)/60
 print(f"Scatterplot ratio created in: {total_time} minutes!")
 
-
+'''
 
 # SCATTERPLOT DIFFERENCE for matches -------------------------
 # Calculates the GC-difference between genes and genomes - only for filtered matches
 # Makes a scatterplot gc-diff vs tRNA score
 
-'''
+
 tRNA_score = "tRNA_score_one_sided"
 
 
@@ -178,8 +187,9 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    tRNA_score_df = pd.read_csv(f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv") 
-    
+    tRNA_gene_df = pd.read_csv(f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv") 
+    tRNA_gene_df = tRNA_gene_df[tRNA_gene_df['Bacteria_ID'].isin(bacteria_ids)]
+
     filename = f"taxonomy_results_{gene_name}.csv"
     if filename not in available_taxonomy_files:
         #print(f"File not found: {filename}")
@@ -187,27 +197,24 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
 
     taxonomy_path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/{filename}"
     taxonomy_gene_df = pd.read_csv(taxonomy_path)
-    matching_df = taxonomy_gene_df[['Bacteria_ID', 'Phylum']]
+    matching_df = taxonomy_gene_df['Bacteria_ID']
 
     # filter to only include matching bacteria
-    filtered_tRNA_score_df = tRNA_score_df.merge(matching_df, on='Bacteria_ID', how='inner')
+    filtered_tRNA_gene_df = tRNA_gene_df.merge(matching_df, on='Bacteria_ID', how='inner')
 
-    if filtered_tRNA_score_df.empty: 
+    if filtered_tRNA_gene_df.empty: 
         #print("No matches for gene:", gene_name)
         continue
 
     filtered_gc_df = bacteria_gc_filtered_df.merge(
-        filtered_tRNA_score_df[['Bacteria_ID']], on='Bacteria_ID', how='inner'
+        filtered_tRNA_gene_df[['Bacteria_ID']], on='Bacteria_ID', how='inner'
     )
-    if filtered_gc_df.empty:
-        #print("här är felet")
-        continue
     bacteria_gc = filtered_gc_df['GC_content'].to_numpy()
 
     # Compute GC difference
     diff = np.round(gene_gc - bacteria_gc, 4) # array of the difference for one gene vs all genomes
 
-    tRNA_score_all.extend(filtered_tRNA_score_df[tRNA_score].values) 
+    tRNA_score_all.extend(filtered_tRNA_gene_df[tRNA_score].values) 
     gc_diff_all.extend(diff) 
 
 
@@ -231,7 +238,7 @@ else:
     tRNA_score_title = "two-sided"
     tRNA_score_nr = "2"
 
-plt.title(f"GC-difference vs tRNA score ({tRNA_score_title}) for matching genes and genomes")
+#plt.title(f"GC-difference vs tRNA score ({tRNA_score_title}) for matching genes and genomes")
 #plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 plt.grid(True)
@@ -242,5 +249,5 @@ plt.close()
 end_time = time.time()
 total_time = (end_time - start_time)/60
 print(f"Scatterplot difference created in: {total_time} minutes!")
-'''
+
 

@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 
-gene_name = "NDM-1" 
+gene_name = "tet(Q)" 
 tRNA_score = "tRNA_score_one_sided"
 
 
@@ -97,21 +97,22 @@ min_value = tRNA_downsampled_df[tRNA_score].min()
 max_value = tRNA_downsampled_df[tRNA_score].max() + 0.001 # so all values fall inside the max_value
 bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
-print(max_value)
 
 # HISTOGRAM
 g = sns.FacetGrid(tRNA_downsampled_df, col="Phylum", col_order=top_phyla.index, sharey=False, col_wrap=3, height=4, aspect=1.2)
 g.map_dataframe(sns.histplot, x=tRNA_score, hue = "Match_status", hue_order=["No_match", "Match"], multiple="stack", bins=bin_edges)
-g.set_axis_labels("tRNA score", "Number of Bacteria")
+g.set_axis_labels("tRNA score", "") # Number of bacteria
 
 for ax, phylum in zip(g.axes.flat, phylum_counts.index):
-    ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})")
-        
-g.set(xlim=(min_value - 0.01, max_value))
+    ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=14)
+    ax.set_xlabel("tRNA score", fontsize=14)
+    ax.tick_params(axis='both', labelsize=12)    
+
+g.set(xlim=(min_value - 0.005, max_value))
     
 plt.subplots_adjust(top=0.85)
 
- # Add title
+# Add title
 if "?" in gene_name:
     gene_name = gene_name.replace("?", "/")
 
@@ -122,11 +123,12 @@ else:
     tRNA_score_title = "two-sided"
     tRNA_score_nr = "2"
 
-if matches == 1: # if matches exists
-    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title}", ha="center", fontsize=14)
-else:
-    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title} - NO MATCHES", ha="center", fontsize=14)     
+#if matches == 1: # if matches exists
+#    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title}", ha="center", fontsize=14)
+#else:
+#    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title} - NO MATCHES", ha="center", fontsize=14)     
 
+plt.tight_layout()
 plt.savefig(f'/home/enyaa/gene_genome/histogram{tRNA_score_nr}_{gene_name}.png')     
 plt.close(g.figure)
 

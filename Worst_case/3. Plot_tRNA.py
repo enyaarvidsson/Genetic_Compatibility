@@ -83,19 +83,23 @@ worst_case_df = worst_case_df.drop(worst_case_df.columns[0], axis=1)
 
 # MERGE THEM TOGETHER ----------
 tRNA_and_worst_df = pd.merge(tRNA_score_downsampled_df, worst_case_df, on='Bacteria_ID', how='inner')
-print(tRNA_and_worst_df)
 
 # WEIGHTED COMBINATION OF MAX DIFF AND RELATIVE DIFF -----------
 scaler = MinMaxScaler()
 tRNA_and_worst_df[["Max_diff_scaled", "Rel_diff_scaled"]] = scaler.fit_transform(
     tRNA_and_worst_df[["Max_difference", "Relative_difference"]]
 )
-print(tRNA_and_worst_df)
 
 tRNA_and_worst_df["Combined_score"] = (
     0.5 * tRNA_and_worst_df["Max_diff_scaled"] +
     0.5 * tRNA_and_worst_df["Rel_diff_scaled"]
 )
+
+# To change name in the legend in the plot
+tRNA_and_worst_df['Match_status'] = tRNA_and_worst_df['Match_status'].replace({
+    'No_match': 'No match',
+    'Match': 'Match'  
+})
 
 
 # SCATTERPLOT -----------
@@ -104,9 +108,9 @@ sns.scatterplot(
     x='Combined_score',
     y=tRNA_score,   
     hue='Match_status',
-    hue_order=["No_match", "Match"],
+    hue_order=["No match", "Match"],
     alpha=1,
-    s=10
+    s=20
     #color='darkorange'
 )
 
@@ -122,9 +126,12 @@ else:
     tRNA_score_nr = "2"
  
 #plt.title(f'Matches for {gene_name} ({tRNA_score_title}) - spearman: {correlation:.2f} p={p_value:.2f}')
-plt.title(f'Matches for {gene_name} ({tRNA_score_title})')
-plt.xlabel('Worst case combined')
-plt.ylabel('tRNA score')
+#plt.title(f'Matches for {gene_name} ({tRNA_score_title})')
+plt.xlabel('Worst case combined', fontsize=16)
+plt.ylabel('tRNA score', fontsize=16)
+plt.tick_params(axis='both', labelsize=14)
+plt.legend(fontsize=14, loc="upper center")
+plt.tight_layout()
 
 plt.savefig(f'/home/enyaa/gene_genome/tRNA{tRNA_score_nr}_vs_worst_{gene_name}.png')     
 plt.close()

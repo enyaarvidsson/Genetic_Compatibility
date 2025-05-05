@@ -225,34 +225,41 @@ reference_euclidean_500.to_csv("/home/jolunds/newtest/reference_euclidean_500.cs
 
 # Plot results
 # Euclidean 
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(8, 6))
 g = sns.histplot(data=reference_euclidean_df, x='Euclidean_distance', hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
 
-plt.xlabel("Euclidean distance")
-plt.ylabel("Number of bacteria")
-plt.title(f"p={p_value_eu}")
+plt.xlabel("Euclidean distance", fontsize=16)
+plt.ylabel("Number of bacteria", fontsize=16)
+plt.tight_layout()
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
 
 plt.savefig("/home/jolunds/newtest/References/euclidean_references.png")
 plt.close()
+print(f"p-value for Euclidean: {p_value_eu}")
 
 # tRNA
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(8, 6))
 sns.histplot(data=reference_tRNA_df, x=tRNA_score, hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
 
-plt.xlabel("tRNA score")
-plt.ylabel("Number of bacteria")
-plt.title(f"p={p_value_tRNA}")
-
+plt.xlabel("tRNA score", fontsize=16)
+plt.ylabel("Number of bacteria", fontsize=16)
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
+plt.tight_layout()
 plt.savefig("/home/jolunds/newtest/References/tRNA_references.png")
 plt.close()
 
 # Euclidean 500 bp
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(8, 6))
 g = sns.histplot(data=reference_euclidean_500, x='Euclidean_distance', hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
 
-plt.xlabel("Euclidean distance 500 bp")
-plt.ylabel("Number of bacteria")
-plt.title(f"p={p_value_500}")
-
+plt.xlabel("Euclidean distance 500 bp", fontsize=16)
+plt.ylabel("Number of bacteria", fontsize=16)
+plt.tight_layout()
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
 plt.savefig("/home/jolunds/newtest/References/euclidean_references_500.png")
 plt.close()
+
+print(f"p-value for Euclidean 500bp: {p_value_500}")

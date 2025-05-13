@@ -8,14 +8,16 @@ import seaborn as sns
 import time
 import os
 from tqdm import tqdm
+from matplotlib.ticker import MaxNLocator
 
 
 start_time = time.time() # Starting time
 
 # GENE_NAMES ----------------------------------------
 # Load file with gene_names (sorted)
-gene_name_file = "/storage/enyaa/REVISED/gene_names.txt"
-gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
+#gene_name_file = "/storage/enyaa/REVISED/gene_names.txt"
+#gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
+gene_names_df = pd.DataFrame({"Gene_name": ["tet(Q)"]}) # to pick only one gene
 
 
 # TAXONOMY (to get phyla later) ---------------------
@@ -28,7 +30,8 @@ full_taxonomy_df.columns = ["Bacteria_ID", "Phylum"]
 
 
 # PDF -----------------------------------------------
-pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_500bp.pdf")
+# to create a pdf - change lines at bottom also
+#pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_500bp.pdf") 
 
 
 # FOR EACH GENE_NAME --------------------------------
@@ -38,13 +41,13 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # lo
         gene_name = gene_name.replace("/", "?")
 
     # EUCLIDEAN DISTANCE for one gene ---------------
-    #euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl") 
+    #euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl") 
         # euclidean_gene_df - has one column Bacteria_ID with the bacteria_ids, and one column with euclidean distance
-    eu_path = f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
     
+    # for 500 bp:
+    eu_path = f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
     if not os.path.exists(eu_path): # skip genes that are shorter than 500 bp because those files don't exist
         continue
-    
     euclidean_gene_df = pd.read_pickle(eu_path).reset_index(drop=True).T.reset_index() # Switch to long format 
     euclidean_gene_df.columns = ['Bacteria_ID', 'Euclidean_distance']
 
@@ -75,8 +78,6 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # lo
     if no_match_count == 0:
         print("No matches for gene:", gene_name)
         matches = 0
-
-    
 
     # ADD PHYLUM (from full taxonomy) ---------------
     # Merge with full taxonomy to get Phylum information
@@ -156,30 +157,37 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # lo
     g.map_dataframe(sns.histplot, x="Euclidean_distance", hue="Match_status", hue_order=["No_match", "Match"], 
                     multiple="stack", bins=bin_edges)
     
-    g.set_axis_labels("Euclidean Distance", "Number of Bacteria")
+    g.set_axis_labels("Euclidean distance", "") # Number of bacteria
 
     for ax, phylum in zip(g.axes.flat, phylum_counts.index):
-        ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})")
+        ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=15)
+        ax.set_xlabel("Length-adjusted 5mer score", fontsize=15)
+        #ax.set_ylabel("Number of Bacteria", fontsize=14)
+        #ax.xaxis.set_major_locator(MaxNLocator(nbins=8)) # number of ticks on x-axis
+        ax.tick_params(axis='both', labelsize=13)
         
     g.set(xlim=(min_value - 0.001, max_value + 0.001))
     
     plt.subplots_adjust(top=0.85)
 
-    # Add title
-    if "?" in gene_name:
-        gene_name = gene_name.replace("?", "/")
+    # Add title (don't need in report):
+    #if "?" in gene_name:
+    #    gene_name = gene_name.replace("?", "/")
+    #if matches == 1: # if matches exists
+    #    plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
+    #else:
+    #    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
     
-    if matches == 1: # if matches exists
-        plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
-    else:
-        plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
-    
-    pdfFile.savefig(g.figure)
-    plt.close(g.figure)
+    #pdfFile.savefig(g.figure)
+    #plt.close(g.figure)
+    plt.tight_layout()
+    plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer500bp_{gene_name}.png') # for one gene
+    plt.close() # for one gene
+
 
 
 # CLOSE PDF -------------------------------------
-pdfFile.close()
+#pdfFile.close()
 
 
 end_time = time.time()

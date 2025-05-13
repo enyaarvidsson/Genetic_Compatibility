@@ -9,7 +9,7 @@ import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 
 
-gene_name = "NDM-1" 
+gene_name = "tet(Q)" 
 
 
 np.random.seed(42)
@@ -107,16 +107,22 @@ euclidean_and_worst_df["Combined_score"] = (
     0.5 * euclidean_and_worst_df["Rel_diff_scaled"]
 )
 
+# To change name in the legend in the plot
+euclidean_and_worst_df['Match_status'] = euclidean_and_worst_df['Match_status'].replace({
+    'No_match': 'No match',
+    'Match': 'Match'  
+})
 
 # SCATTERPLOT -----------
+plt.figure(figsize=(8, 6))
 sns.scatterplot(
     data=euclidean_and_worst_df,
     x='Combined_score',
     y='Euclidean_distance',   
     hue='Match_status',
-    hue_order=["No_match", "Match"],
+    hue_order=["No match", "Match"],
     alpha=1,
-    s=10
+    s=20
     #color='darkorange'
 )
 
@@ -125,9 +131,12 @@ if "?" in gene_name:
     gene_name = gene_name.replace("?", "/")
  
 #plt.title(f'Matches for {gene_name} ({tRNA_score_title}) - spearman: {correlation:.2f} p={p_value:.2f}')
-plt.title(f'{gene_name}')
-plt.xlabel('Worst case combined')
-plt.ylabel('Euclidean distance')
+#plt.title(f'{gene_name}')
+plt.xlabel('5mer worst case', fontsize=14)
+plt.ylabel('5mer score', fontsize=14)
+plt.tick_params(axis='both', labelsize=12)
+plt.legend(fontsize=14, loc="upper center")
+plt.tight_layout()
 
 plt.savefig(f'/home/enyaa/gene_genome/Euclidean_vs_worst_{gene_name}.png')     
 plt.close()

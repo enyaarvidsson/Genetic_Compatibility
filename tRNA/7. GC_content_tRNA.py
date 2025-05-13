@@ -109,10 +109,10 @@ df_plot = pd.DataFrame({
 
 # Scatterplot:
 plt.figure(figsize=(8, 6))
-plt.scatter(data=df_plot, x='tRNA_score', y='GC_ratio', alpha=1, s=10)
-plt.xlabel("tRNA score", fontsize=16)
-plt.ylabel("GC-ratio", fontsize=16)
-plt.tick_params(axis='both', labelsize=14)
+plt.scatter(data=df_plot, x='tRNA_score', y='GC_ratio', alpha=1, s=10, color= "darkorange")
+plt.xlabel("tRNA score", fontsize=14)
+plt.ylabel("GC-ratio", fontsize=14)
+plt.tick_params(axis='both', labelsize=12)
 
 if tRNA_score == "tRNA_score_one_sided":
     tRNA_score_title = "one-sided"
@@ -132,8 +132,8 @@ plt.close()
 end_time = time.time()
 total_time = (end_time - start_time)/60
 print(f"Scatterplot ratio created in: {total_time} minutes!")
-
 '''
+
 
 # SCATTERPLOT DIFFERENCE for matches -------------------------
 # Calculates the GC-difference between genes and genomes - only for filtered matches
@@ -226,10 +226,10 @@ df_plot = pd.DataFrame({
 
 # Scatterplot:
 plt.figure(figsize=(8, 6))
-plt.scatter(data=df_plot, x='tRNA_score', y='GC_difference', alpha=1, s=10)
-plt.xlabel("tRNA score", fontsize=16)
-plt.ylabel("GC-difference", fontsize=16)
-plt.tick_params(axis='both', labelsize=14)
+plt.scatter(data=df_plot, x='tRNA_score', y='GC_difference', alpha=1, s=10, color="darkorange")
+plt.xlabel("tRNA score", fontsize=14)
+plt.ylabel("GC-difference", fontsize=14)
+plt.tick_params(axis='both', labelsize=12)
 
 if tRNA_score == "tRNA_score_one_sided":
     tRNA_score_title = "one-sided"

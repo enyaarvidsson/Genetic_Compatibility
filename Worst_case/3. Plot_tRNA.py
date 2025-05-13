@@ -103,6 +103,7 @@ tRNA_and_worst_df['Match_status'] = tRNA_and_worst_df['Match_status'].replace({
 
 
 # SCATTERPLOT -----------
+plt.figure(figsize=(8, 6))
 sns.scatterplot(
     data=tRNA_and_worst_df,
     x='Combined_score',
@@ -127,9 +128,9 @@ else:
  
 #plt.title(f'Matches for {gene_name} ({tRNA_score_title}) - spearman: {correlation:.2f} p={p_value:.2f}')
 #plt.title(f'Matches for {gene_name} ({tRNA_score_title})')
-plt.xlabel('Worst case combined', fontsize=16)
-plt.ylabel('tRNA score', fontsize=16)
-plt.tick_params(axis='both', labelsize=14)
+plt.xlabel('5mer worst case', fontsize=14)
+plt.ylabel('tRNA score', fontsize=14)
+plt.tick_params(axis='both', labelsize=12)
 plt.legend(fontsize=14, loc="upper center")
 plt.tight_layout()
 

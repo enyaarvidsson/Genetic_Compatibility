@@ -8,6 +8,7 @@ import seaborn as sns
 import time
 import os
 from tqdm import tqdm
+from matplotlib.ticker import MaxNLocator
 
 
 start_time = time.time() # Starting time
@@ -159,10 +160,11 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # lo
     g.set_axis_labels("Euclidean distance", "") # Number of bacteria
 
     for ax, phylum in zip(g.axes.flat, phylum_counts.index):
-        ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=14)
-        ax.set_xlabel("Euclidean distance", fontsize=14)
+        ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=15)
+        ax.set_xlabel("Length-adjusted 5mer score", fontsize=15)
         #ax.set_ylabel("Number of Bacteria", fontsize=14)
-        ax.tick_params(axis='both', labelsize=12)
+        #ax.xaxis.set_major_locator(MaxNLocator(nbins=8)) # number of ticks on x-axis
+        ax.tick_params(axis='both', labelsize=13)
         
     g.set(xlim=(min_value - 0.001, max_value + 0.001))
     
@@ -179,7 +181,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # lo
     #pdfFile.savefig(g.figure)
     #plt.close(g.figure)
     plt.tight_layout()
-    plt.savefig(f'/home/enyaa/gene_genome/histogram_{gene_name}_500bp.png') # for one gene
+    plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer500bp_{gene_name}.png') # for one gene
     plt.close() # for one gene
 
 

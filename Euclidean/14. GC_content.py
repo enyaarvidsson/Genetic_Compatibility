@@ -198,7 +198,7 @@ print(f"Scatterplot created in: {total_time} minutes!")
 # SCATTERPLOT RATIO for matches - FASTER ----------------
 # Calculates the GC-ratio between genes and genomes - only for filtered matches
 # Makes a scatterplot gc-ratio vs euclidean
-#'''
+'''
 
 start_time = time.time()
 
@@ -284,7 +284,7 @@ plt.figure(figsize=(8, 6))
 #sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_ratio', s=10)
 plt.scatter(data=df_plot, x='Euclidean_distance', y='GC_ratio', alpha=1, s=10, color="darkorange")
 #plt.scatter(euclidean_distances_all, gc_diff_all, alpha=1, s=10)
-plt.xlabel("Euclidean distance", fontsize=16)
+plt.xlabel("5mer score", fontsize=16)
 plt.ylabel("GC-ratio", fontsize=16)
 plt.tick_params(axis='both', labelsize=14)
 #plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
@@ -307,7 +307,7 @@ print(f"Scatterplot ratio created in: {total_time} minutes!")
 # SCATTERPLOT DIFFERENCE for matches ----------------
 # Calculates the GC-difference between genes and genomes - only for filtered matches
 # Makes a scatterplot gc-diff vs euclidean
-'''
+#'''
 
 start_time = time.time()
 
@@ -393,7 +393,7 @@ plt.figure(figsize=(8, 6))
 #sns.scatterplot(data=df_plot, x='Euclidean_distance', y='GC_ratio', s=10)
 plt.scatter(data=df_plot, x='Euclidean_distance', y='GC_difference', alpha=1, s=10, color="darkorange")
 #plt.scatter(euclidean_distances_all, gc_diff_all, alpha=1, s=10)
-plt.xlabel("Euclidean distance", fontsize=16)
+plt.xlabel("5mer score", fontsize=16)
 plt.ylabel("GC-difference", fontsize=16)
 plt.tick_params(axis='both', labelsize=14)
 #plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
@@ -407,5 +407,5 @@ plt.close()
 end_time = time.time()
 total_time = (end_time - start_time)/60
 print(f"Scatterplot diff created in: {total_time} minutes!")
-'''
+#'''
 

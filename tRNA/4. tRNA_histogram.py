@@ -14,6 +14,7 @@ np.random.seed(42)
 if "/" in gene_name:
     gene_name = gene_name.replace("/", "?")
 
+#file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_tail/tRNA_score_{gene_name}.csv"  
 file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv"  
 #file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
 tRNA_score_df = pd.read_csv(file_path)
@@ -94,7 +95,7 @@ matches_phylum_counts = matches_phylum_counts.reindex(top_phyla.index).fillna(0)
 
 nr_bins = 30
 min_value = tRNA_downsampled_df[tRNA_score].min()
-max_value = tRNA_downsampled_df[tRNA_score].max() + 0.001 # so all values fall inside the max_value
+max_value = tRNA_downsampled_df[tRNA_score].max() #+ 0.001 # so all values fall inside the max_value
 bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
 
@@ -104,11 +105,11 @@ g.map_dataframe(sns.histplot, x=tRNA_score, hue = "Match_status", hue_order=["No
 g.set_axis_labels("tRNA score", "") # Number of bacteria
 
 for ax, phylum in zip(g.axes.flat, phylum_counts.index):
-    ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=14)
-    ax.set_xlabel("tRNA score", fontsize=14)
-    ax.tick_params(axis='both', labelsize=12)    
+    ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=15)
+    ax.set_xlabel("tRNA score", fontsize=15)
+    ax.tick_params(axis='both', labelsize=13)    
 
-g.set(xlim=(min_value - 0.005, max_value))
+g.set(xlim=(min_value, max_value))
     
 plt.subplots_adjust(top=0.85)
 

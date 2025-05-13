@@ -76,7 +76,7 @@ for phylum in top_phyla:
                                 value_name="Count")
 
     # Plot mean with standard deviation as error bars
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(8, 4))
     sns.barplot(
         data=melted_df,
         x="Anticodon",
@@ -86,10 +86,12 @@ for phylum in top_phyla:
         err_kws ={'linewidth': 1.5, 'color': 'black'} 
     )
 
-    plt.title(f"Distribution of anticodons in {phylum}")
+    #plt.title(f"Distribution of anticodons in {phylum}")
     plt.xticks(rotation=90)
-    plt.ylabel("Mean Count ± SD")
-    plt.xlabel("Anticodon")
+    plt.ylabel("", fontsize=14)
+    plt.xlabel("Anticodon", fontsize=14)
+    plt.xticks(fontsize=9)
+    plt.yticks(fontsize=9)
     plt.tight_layout()
     plt.savefig(f"/home/jolunds/newtest/barplot_{phylum}.png")
 '''

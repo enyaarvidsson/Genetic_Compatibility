@@ -39,7 +39,7 @@ not_mobile_df = not_mobile_df.loc[~not_mobile_df["Gene_name"].isin(genes_to_remo
 
 not_mobile_df.to_csv("/storage/jolunds/compatible_genes.csv")
 '''
-
+'''
 # COMPATIBLE -------------------------
 # Load compatible genes
 compatible_genes_df = pd.read_csv("/storage/jolunds/compatible_genes.csv")
@@ -218,48 +218,111 @@ reference_euclidean_df.to_csv("/home/jolunds/newtest/reference_euclidean_df.csv"
 reference_tRNA_df = pd.concat([comp_tRNA_df, sample_incomp_tRNA_df], ignore_index=True)
 reference_tRNA_df = reference_tRNA_df.sort_values(by=tRNA_score).reset_index(drop=True)
 reference_tRNA_df.to_csv("/home/jolunds/newtest/reference_tRNA_df.csv")
-
-reference_euclidean_500 = pd.concat([comp_euclidean_500, sample_incomp_euclidean_500], ignore_index=True)
+'''
+'''reference_euclidean_500 = pd.concat([comp_euclidean_500, sample_incomp_euclidean_500], ignore_index=True)
 reference_euclidean_500 = reference_euclidean_500.sort_values(by='Euclidean_distance').reset_index(drop=True)
 reference_euclidean_500.to_csv("/home/jolunds/newtest/reference_euclidean_500.csv")
+'''
 
+'''tRNA_score = "tRNA_score_one_sided"
+reference_tRNA_df = pd.read_csv("/home/jolunds/newtest/reference_tRNA_df.csv")
+comp_tRNA_df = reference_tRNA_df[reference_tRNA_df["Reference"] == "Compatible"]
+sample_incomp_tRNA_df = reference_tRNA_df[reference_tRNA_df["Reference"] == "Incompatible"]
+
+van_incomp_tRNA_df = sample_incomp_tRNA_df[sample_incomp_tRNA_df["Phylum"] == "Pseudomonadota"]
+beta_incomp_tRNA_df = sample_incomp_tRNA_df[sample_incomp_tRNA_df["Phylum"] == "Bacillota"]
+
+group1_tRNA = list(comp_tRNA_df[tRNA_score])
+group2_tRNA_van = list(van_incomp_tRNA_df[tRNA_score])
+group2_tRNA_beta = list(beta_incomp_tRNA_df[tRNA_score])
+stat_tRNA_van, p_value_tRNA_van = mannwhitneyu(group1_tRNA, group2_tRNA_van, alternative='less')  # Test if group1 has smaller values
+stat_tRNA_beta, p_value_tRNA_beta = mannwhitneyu(group1_tRNA, group2_tRNA_beta, alternative='less') 
+
+reference_van = pd.concat([comp_tRNA_df, van_incomp_tRNA_df], ignore_index=True)
+reference_beta = pd.concat([comp_tRNA_df, beta_incomp_tRNA_df], ignore_index=True)
+'''
 # Plot results
-# Euclidean 
+
+'''# tRNA
 plt.figure(figsize=(8, 6))
-g = sns.histplot(data=reference_euclidean_df, x='Euclidean_distance', hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
+ax =sns.histplot(data=reference_van, x=tRNA_score, hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
 
-plt.xlabel("Euclidean distance", fontsize=16)
-plt.ylabel("Number of bacteria", fontsize=16)
-plt.tight_layout()
-plt.xticks(fontsize=14)
-plt.yticks(fontsize=14)
-
-plt.savefig("/home/jolunds/newtest/References/euclidean_references.png")
-plt.close()
-print(f"p-value for Euclidean: {p_value_eu}")
-
-# tRNA
-plt.figure(figsize=(8, 6))
-sns.histplot(data=reference_tRNA_df, x=tRNA_score, hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
-
+plt.setp(ax.get_legend().get_texts(), fontsize='16')
+ax.legend_.set_title(None)
 plt.xlabel("tRNA score", fontsize=16)
-plt.ylabel("Number of bacteria", fontsize=16)
+plt.ylabel("", fontsize=16)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.tight_layout()
-plt.savefig("/home/jolunds/newtest/References/tRNA_references.png")
+plt.savefig("/home/jolunds/newtest/References/tRNA_references_van.png")
 plt.close()
 
+print(f"p-value for tRNA score with van is {p_value_tRNA_van}")
+
+plt.figure(figsize=(8, 6))
+ax = sns.histplot(data=reference_beta, x=tRNA_score, hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
+
+plt.setp(ax.get_legend().get_texts(), fontsize='16')
+ax.legend_.set_title(None)
+plt.xlabel("tRNA score", fontsize=16)
+plt.ylabel("", fontsize=16)
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
+plt.tight_layout()
+plt.savefig("/home/jolunds/newtest/References/tRNA_references_beta.png")
+plt.close()
+
+print(f"p-value for tRNA score with beta-lactamases is {p_value_tRNA_beta}")
+'''
 # Euclidean 500 bp
+reference_euclidean_500 = pd.read_csv("/home/jolunds/newtest/reference_euclidean_500.csv")
 plt.figure(figsize=(8, 6))
 g = sns.histplot(data=reference_euclidean_500, x='Euclidean_distance', hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
 
-plt.xlabel("Euclidean distance 500 bp", fontsize=16)
-plt.ylabel("Number of bacteria", fontsize=16)
+plt.setp(g.get_legend().get_texts(), fontsize=16)
+g.legend_.set_title(None)
+plt.xlabel("Length-adjusted 5mer score", fontsize=16)
+plt.ylabel("", fontsize=16)
 plt.tight_layout()
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.savefig("/home/jolunds/newtest/References/euclidean_references_500.png")
 plt.close()
 
-print(f"p-value for Euclidean 500bp: {p_value_500}")
+
+# Euclidean 
+reference_euclidean_df = pd.read_csv("/home/jolunds/newtest/reference_euclidean_df.csv")
+plt.figure(figsize=(8, 6))
+g = sns.histplot(data=reference_euclidean_df, x='Euclidean_distance', hue='Reference', hue_order=["Compatible", "Incompatible"], multiple='stack', bins=30, palette={'Compatible': 'mediumseagreen', 'Incompatible': 'palevioletred'})
+
+plt.xlabel("5mer score", fontsize=16)
+plt.setp(g.get_legend().get_texts(), fontsize=16)
+g.legend_.set_title(None)
+plt.ylabel("", fontsize=16)
+plt.tight_layout()
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
+
+plt.savefig("/home/jolunds/newtest/References/euclidean_references.png")
+plt.close()
+
+'''
+reference_eu_df = pd.read_csv("/home/jolunds/newtest/reference_euclidean_df.csv")
+
+comp_eu_df = reference_eu_df[reference_eu_df["Reference"] == "Compatible"]
+sample_incomp_eu_df = reference_eu_df[reference_eu_df["Reference"] == "Incompatible"]
+
+van_incomp_eu_df = sample_incomp_eu_df[sample_incomp_eu_df["Phylum"] == "Pseudomonadota"]
+beta_incomp_eu_df = sample_incomp_eu_df[sample_incomp_eu_df["Phylum"] == "Bacillota"]
+
+group1_eu = list(comp_eu_df["Euclidean_distance"])
+group2_eu_van = list(van_incomp_eu_df["Euclidean_distance"])
+group2_eu_beta = list(beta_incomp_eu_df["Euclidean_distance"])
+stat_eu_van, p_value_eu_van = mannwhitneyu(group1_eu, group2_eu_van, alternative='less')  # Test if group1 has smaller values
+stat_eu_beta, p_value_eu_beta = mannwhitneyu(group1_eu, group2_eu_beta, alternative='less') 
+
+
+print(f"p-value for van in Euclidean: {p_value_eu_van}")
+
+print(f"p-value for beta in Euclidean: {p_value_eu_beta}")
+'''

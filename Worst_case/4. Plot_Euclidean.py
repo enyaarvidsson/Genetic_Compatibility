@@ -109,7 +109,7 @@ euclidean_and_worst_df["Combined_score"] = (
 
 # To change name in the legend in the plot
 euclidean_and_worst_df['Match_status'] = euclidean_and_worst_df['Match_status'].replace({
-    'No_match': 'No match',
+    'No_match': 'Non-match',
     'Match': 'Match'  
 })
 
@@ -120,7 +120,7 @@ sns.scatterplot(
     x='Combined_score',
     y='Euclidean_distance',   
     hue='Match_status',
-    hue_order=["No match", "Match"],
+    hue_order=["Non-match", "Match"],
     alpha=1,
     s=20
     #color='darkorange'

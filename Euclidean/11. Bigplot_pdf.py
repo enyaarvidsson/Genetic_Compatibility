@@ -189,6 +189,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # lo
 # CLOSE PDF -------------------------------------
 #pdfFile.close()
 
+print(min_value, "and", max_value)
 
 end_time = time.time()
 total_time = (end_time - start_time)/60

@@ -5,7 +5,8 @@ import os
 import numpy as np
 
 
-gene_name = "tet(Q)" 
+gene_name = "tet(W)" 
+
 tRNA_score = "tRNA_score_one_sided"
 
 
@@ -39,6 +40,11 @@ if no_match_count == 0:
 
 # Filter for top phyla
 top_phyla = tRNA_score_df["Phylum"].value_counts().head(6)
+
+# Same order as 5mer score
+phyla_order = ["Pseudomonadota", "Bacillota", "Actinomycetota", "Bacteroidota", "Cyanobacteriota", "Campylobacterota"]
+top_phyla = top_phyla.loc[phyla_order]
+
 tRNA_score_df = tRNA_score_df[tRNA_score_df['Phylum'].isin(top_phyla.index)]
 
 '''
@@ -105,11 +111,12 @@ g.map_dataframe(sns.histplot, x=tRNA_score, hue = "Match_status", hue_order=["No
 g.set_axis_labels("tRNA score", "") # Number of bacteria
 
 for ax, phylum in zip(g.axes.flat, phylum_counts.index):
-    ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=15)
+    #ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=15)
+    ax.set_title(f"{phylum}", fontsize=15)
     ax.set_xlabel("tRNA score", fontsize=15)
     ax.tick_params(axis='both', labelsize=13)    
 
-g.set(xlim=(min_value, max_value))
+g.set(xlim=(min_value-0.003, max_value))
     
 plt.subplots_adjust(top=0.85)
 

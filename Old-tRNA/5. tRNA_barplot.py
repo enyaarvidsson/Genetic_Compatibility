@@ -74,6 +74,17 @@ for phylum in top_phyla:
     melted_df = phylum_df.melt(id_vars=["Bacteria_ID", "Phylum"], 
                                 var_name="Anticodon", 
                                 value_name="Count")
+    print(melted_df)
+    melted_df["Anticodon"] = melted_df["Anticodon"].str.replace("T", "U")
+    print(melted_df)
+
+    ######
+    import matplotlib.patches as mpatches
+    import matplotlib.lines as mlines
+    # Create custom legend items
+    bar_patch = mpatches.Patch(color='C0', label='Average anticodon count')  # 'C0' is seaborn's default blue
+    error_line = mlines.Line2D([], [], color='black', linewidth=1.5, label='Standard deviation')
+    #####
 
     # Plot mean with standard deviation as error bars
     plt.figure(figsize=(8, 4))
@@ -92,8 +103,13 @@ for phylum in top_phyla:
     plt.xlabel("Anticodon", fontsize=14)
     plt.xticks(fontsize=9)
     plt.yticks(fontsize=9)
+    
+    ####
+    plt.legend(handles=[bar_patch, error_line], fontsize=10)
+    ###
+    
     plt.tight_layout()
-    plt.savefig(f"/home/jolunds/newtest/barplot_{phylum}.png")
+    plt.savefig(f"/home/enyaa/gene_genome/barplot_{phylum}.png")
 '''
 for phylum in top_phyla:
     phylum_df = anticodon_counts_df[anticodon_counts_df["Phylum"] == phylum]

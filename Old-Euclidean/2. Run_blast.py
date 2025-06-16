@@ -1,3 +1,5 @@
+# FLYTTAD!
+
 # Run BLAST
 
 #from Bio import SeqIO # read and write sequence files

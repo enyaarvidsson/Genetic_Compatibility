@@ -13,101 +13,57 @@ from matplotlib.ticker import MaxNLocator
 
 start_time = time.time() 
 
+# FOR ALL GENES OR ONE SPECIFIC GENE - change here:
+# gene = all - for all genes
+# gene = "tet(Q)" - for the specific gene tet(Q) - can be changed to any other gene
+gene = all
+
+
 # GENE_NAMES ----------------------------------------
-# Load file with gene_names (sorted)
-#gene_name_file = "/storage/enyaa/REVISED/gene_names.txt"
-#gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
-gene_names_df = pd.DataFrame({"Gene_name": ["tet(Q)"]}) # to pick only one gene
-
-
-# TAXONOMY (to get phyla later) ---------------------
-# Read full taxonomy file
-taxonomy_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_full_lineage.tsv"
-dtype_dict = {0: "string", 2: "category"}  
-use_cols = [0, 2]  # only load Bacteria_ID and Phylum 
-full_taxonomy_df = pd.read_csv(taxonomy_file, sep="\t", usecols=use_cols, dtype=dtype_dict, header=None)
-full_taxonomy_df.columns = ["Bacteria_ID", "Phylum"]
+if gene == all:
+    # Load file with gene_names (sorted)
+    gene_name_file = "/storage/enyaa/FINAL/gene_names.txt"
+    gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
+else:
+    gene_names_df = pd.DataFrame({"Gene_name": [gene]}) # to pick only one gene
 
 
 # PDF -----------------------------------------------
-# to create a pdf - change lines at bottom also
-#pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_500bp.pdf") 
+if gene == all:
+    pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot.pdf") 
 
 
 # FOR EACH GENE_NAME --------------------------------
-for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # loops through the gene_names in alphabetical order
+for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
 
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
     # EUCLIDEAN DISTANCE for one gene ---------------
     euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl") 
-        # euclidean_gene_df - has one column Bacteria_ID with the bacteria_ids, and one column with euclidean distance
-    
-    # for 500 bp:
-    #eu_path = f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
-    #if not os.path.exists(eu_path): # skip genes that are shorter than 500 bp because those files don't exist
-    #    continue
-    #euclidean_gene_df = pd.read_pickle(eu_path).reset_index(drop=True).T.reset_index() # Switch to long format 
-    #euclidean_gene_df.columns = ['Bacteria_ID', 'Euclidean_distance']
-
-    # MATCH STATUS (from taxonomy) ------------------
-    # Load Taxonomy results
-    path = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv" # this contains matches
-    
-    if os.path.exists(path):
-        dtype_dict = {"Bacteria_ID": "string"}
-        use_cols = ["Bacteria_ID"]
-        taxonomy_gene_df = pd.read_csv(path, sep=",", usecols=use_cols, dtype=dtype_dict)
-    
-        # Find matching bacteria for this gene
-        matching_df = taxonomy_gene_df[['Bacteria_ID']].drop_duplicates() # bacteria_ids that has matched with the gene - UNIQUE
-        matches = 1 # there exists matches
-        
-    else: # if taxonomy file doesn't exist - there are no matches for the gene
-        matching_df = pd.DataFrame(columns=["Bacteria_ID"]) # create an empty matching_df
-        #print(f"File not found: {path}")
-        matches = 0 # no matches
-
-    # Add match status column using merge
-    euclidean_gene_df = euclidean_gene_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match   
-    euclidean_gene_df["Match_status"] = euclidean_gene_df["Match_status"].fillna("No_match")
-        # euclidean_gene_df - has Bacteria_ID, Euclidean_distance and Match_status columns
+        # denna borde innehålla följande (och bara bestå av top 6 phyla)
+        # euclidean_gene_df - has Bacteria_ID, Euclidean_distance, Match_status and Phylum columns
     no_match_count = euclidean_gene_df["Match_status"].value_counts().get("Match", 0)
     
+    matches = 1 # if there exists matches
     if no_match_count == 0:
         print("No matches for gene:", gene_name)
-        matches = 0
-
-    # ADD PHYLUM (from full taxonomy) ---------------
-    # Merge with full taxonomy to get Phylum information
-    euclidean_gene_df = euclidean_gene_df.merge(full_taxonomy_df[["Bacteria_ID", "Phylum"]], on="Bacteria_ID", how="left")
-        # euclidean_gene_df - has Bacteria_ID, Euclidean_distance, Match_status and Phylum columns
-
-    # ONLY PHYLA WITH MOST GENOMES ------------------
-    # Select top 6 most frequent phyla
-    top_phyla = euclidean_gene_df["Phylum"].value_counts().head(6)
-    #print(top_phyla)
-    euclidean_top_phyla_df = euclidean_gene_df[euclidean_gene_df["Phylum"].isin(top_phyla.index)]
-        # euclidean_top_phyla_df - has only the top 6 phyla - for each gene (columns: Bacteria_ID, Euclidean_distance, Match_status, Phylum)
+        matches = 0 # if no matches exists
 
     # BINS FOR THE HISTOGRAM ------------------------
     nr_bins = 30
-    min_value = euclidean_top_phyla_df["Euclidean_distance"].min()
-    max_value = euclidean_top_phyla_df["Euclidean_distance"].max() + 0.001 # so all values fall inside the max_value
+    min_value = euclidean_gene_df["Euclidean_distance"].min()
+    max_value = euclidean_gene_df["Euclidean_distance"].max() + 0.001 # so all values fall inside the max_value
     bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
     # DOWNSAMPLE NO_MATCH ---------------------------
-    # om man vill göra fast för varje phylum och beroende på hur många matches, gör följande
+    # for each phylum and depending on number of matches
     downsampled_no_matches = [] # will become a list of dataframes
 
-    euclidean_top_phyla_df = euclidean_top_phyla_df.copy()
-    euclidean_top_phyla_df["Phylum"] = euclidean_top_phyla_df["Phylum"].astype(str)
-    #print(len(euclidean_top_phyla_df))
-    #no_match_count = euclidean_top_phyla_df["Match_status"].value_counts().get("No_match", 0)
-    #print(no_match_count)
+    euclidean_gene_df = euclidean_gene_df.copy()
+    euclidean_gene_df["Phylum"] = euclidean_gene_df["Phylum"].astype(str)
 
-    for phylum, phylum_df in euclidean_top_phyla_df.groupby("Phylum"): # phylum - name of phylum, phylum_df - df that has only rows from that phylum
+    for phylum, phylum_df in euclidean_gene_df.groupby("Phylum"): # phylum - name of phylum, phylum_df - df that has only rows from that phylum
 
         match_count = (phylum_df["Match_status"] == "Match").sum()
 

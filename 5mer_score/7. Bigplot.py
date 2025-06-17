@@ -98,13 +98,13 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
 
     # COUNT NR OF BACTERIA --------------------------
     # in each phylum
-    phylum_counts = downsampled_df['Phylum'].value_counts()  
+    phylum_counts = downsampled_df['Phylum'].value_counts()
+    top_phyla = euclidean_gene_df["Phylum"].value_counts().head(6) # to get the largest phyla first  
     phylum_counts = phylum_counts.reindex(top_phyla.index) # In same order as top_phyla
 
     # matches in each phylum
     matches_phylum_counts = downsampled_df[downsampled_df['Match_status'] == 'Match'].groupby('Phylum').size()
     matches_phylum_counts = matches_phylum_counts.reindex(top_phyla.index).fillna(0).astype(int)
-    #print(matches_phylum_counts)
 
     # HISTOGRAM -------------------------------------
     # Create histogram with stacked bars
@@ -127,25 +127,22 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     plt.subplots_adjust(top=0.85)
 
     # Add title (don't need in report):
-    #if "?" in gene_name:
-    #    gene_name = gene_name.replace("?", "/")
-    #if matches == 1: # if matches exists
-    #    plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
-    #else:
-    #    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
+    if "?" in gene_name:
+        gene_name = gene_name.replace("?", "/")
+    if matches == 1: # if matches exists
+        plt.figtext(0.5, 0.95, f"Gene name: {gene_name}", ha="center", fontsize=14)
+    else:
+        plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
     
-    #pdfFile.savefig(g.figure)
-    #plt.close(g.figure)
-    plt.tight_layout()
-    plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_{gene_name}.png') # for one gene
-    plt.close() # for one gene
+    if gene == all:
+        pdfFile.savefig(g.figure)
+        plt.close(g.figure)
+        pdfFile.close() # close pdf
+    else:
+        plt.tight_layout()
+        plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_{gene_name}.png') # for one gene
+        plt.close() # for one gene
 
-
-
-# CLOSE PDF -------------------------------------
-#pdfFile.close()
-
-print(min_value, "and", max_value)
 
 end_time = time.time()
 total_time = (end_time - start_time)/60

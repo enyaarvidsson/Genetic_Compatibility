@@ -1,3 +1,5 @@
+# TROR INTE DENNA BEHÖVS?
+
 # New random genomes
 
 # Takes one gene, and many genomes

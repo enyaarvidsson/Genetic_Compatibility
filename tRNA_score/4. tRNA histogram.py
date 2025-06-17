@@ -1,4 +1,4 @@
-# FLYTTAD!
+# Creates a histogram for a specific gene, for the tRNA score
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -9,32 +9,17 @@ import numpy as np
 
 gene_name = "tet(W)" 
 
-tRNA_score = "tRNA_score_one_sided"
-
 
 np.random.seed(42)
 
 if "/" in gene_name:
     gene_name = gene_name.replace("/", "?")
 
-#file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_tail/tRNA_score_{gene_name}.csv"  
 file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv"  
-#file_path = f"/storage/jolunds/REVISED/tRNA/tRNA_score/tRNA_score_{gene_name}.csv"
 tRNA_score_df = pd.read_csv(file_path)
+# denna borde innehålla match_status
 
-# Load taxonomy results and count matches
-taxonomy_file = f"/storage/jolunds/REVISED/TAXONOMY/taxonomy_split_genes/taxonomy_results_{gene_name}.csv"
-if os.path.exists(taxonomy_file):
-    taxonomy_df = pd.read_csv(taxonomy_file)
-    taxonomy_df.columns = ["Gene_name", "Bacteria_ID", "Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"]
-    taxonomy_df = taxonomy_df.drop_duplicates() # Remove duplicates (when we have multiple matches in one genome)
-    matching_df = taxonomy_df[['Bacteria_ID']]
-    tRNA_score_df = tRNA_score_df.merge(matching_df.assign(Match_status="Match"), on="Bacteria_ID", how="left").fillna("No_match") # here a new column is added to euclidean_gene_df called "Match_status" and it says if there are Match
-    matches = 1
-else: # If taxonomy file do not exist
-    tRNA_score_df["Match_status"] = "No_match"
-    matches = 0
-    
+matches = 1    
 no_match_count = tRNA_score_df["Match_status"].value_counts().get("Match", 0)    
 if no_match_count == 0:
         print("No matches for gene:", gene_name)
@@ -49,12 +34,6 @@ top_phyla = top_phyla.loc[phyla_order]
 
 tRNA_score_df = tRNA_score_df[tRNA_score_df['Phylum'].isin(top_phyla.index)]
 
-'''
-nr_bins = 30
-min_value = tRNA_score_df[tRNA_score].min()
-max_value = tRNA_score_df[tRNA_score].max() + 0.001 # so all values fall inside the max_value
-bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
-'''
 
 # DOWNSAMPLE NO_MATCH
 downsampled_no_matches = [] # will become a list of dataframes
@@ -100,16 +79,15 @@ phylum_counts = phylum_counts.reindex(top_phyla.index) # In same order as top_ph
 matches_phylum_counts = tRNA_downsampled_df[tRNA_downsampled_df['Match_status'] == 'Match'].groupby('Phylum').size()
 matches_phylum_counts = matches_phylum_counts.reindex(top_phyla.index).fillna(0).astype(int)
 
-
 nr_bins = 30
-min_value = tRNA_downsampled_df[tRNA_score].min()
-max_value = tRNA_downsampled_df[tRNA_score].max() #+ 0.001 # so all values fall inside the max_value
+min_value = tRNA_downsampled_df["tRNA_score_one_sided"].min()
+max_value = tRNA_downsampled_df["tRNA_score_one_sided"].max() #+ 0.001 # so all values fall inside the max_value
 bin_edges = np.linspace(min_value, max_value, nr_bins + 1)
 
 
 # HISTOGRAM
 g = sns.FacetGrid(tRNA_downsampled_df, col="Phylum", col_order=top_phyla.index, sharey=False, col_wrap=3, height=4, aspect=1.2)
-g.map_dataframe(sns.histplot, x=tRNA_score, hue = "Match_status", hue_order=["No_match", "Match"], multiple="stack", bins=bin_edges)
+g.map_dataframe(sns.histplot, x="tRNA_score_one_sided", hue = "Match_status", hue_order=["No_match", "Match"], multiple="stack", bins=bin_edges)
 g.set_axis_labels("tRNA score", "") # Number of bacteria
 
 for ax, phylum in zip(g.axes.flat, phylum_counts.index):
@@ -126,17 +104,13 @@ plt.subplots_adjust(top=0.85)
 if "?" in gene_name:
     gene_name = gene_name.replace("?", "/")
 
-if tRNA_score == "tRNA_score_one_sided":
-    tRNA_score_title = "one-sided"
-    tRNA_score_nr = "1"
-else:
-    tRNA_score_title = "two-sided"
-    tRNA_score_nr = "2"
+tRNA_score_title = "one-sided"
+tRNA_score_nr = "1"
 
-#if matches == 1: # if matches exists
-#    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title}", ha="center", fontsize=14)
-#else:
-#    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title} - NO MATCHES", ha="center", fontsize=14)     
+if matches == 1: # if matches exists
+    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title}", ha="center", fontsize=14)
+else:
+    plt.figtext(0.5, 0.95, f"Gene name: {gene_name} {tRNA_score_title} - NO MATCHES", ha="center", fontsize=14)     
 
 plt.tight_layout()
 plt.savefig(f'/home/enyaa/gene_genome/histogram{tRNA_score_nr}_{gene_name}.png')     

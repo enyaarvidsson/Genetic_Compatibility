@@ -1,3 +1,4 @@
+# FLYTTAD!
 
 from Bio.SeqUtils import gc_fraction
 import pandas as pd

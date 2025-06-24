@@ -8,14 +8,6 @@ import time
 from tqdm import tqdm
 
 
-
-# !!!!!!!!
-# kör create dictionary innnan ny kmer counts
-# ta bort genome_temp_remove och genome_kmer 
-# innan jag startar ny
-# !!!!!!!!
-
-
 # Filtered bacteria -----------------
 filtered_bacteria_df = pd.read_csv("/storage/enyaa/FINAL/filtered_bacteria.csv")
     # 72690 bacteria

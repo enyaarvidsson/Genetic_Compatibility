@@ -8,6 +8,7 @@ import time
 from tqdm import tqdm
 
 
+
 # !!!!!!!!
 # kör create dictionary innnan ny kmer counts
 # ta bort genome_temp_remove och genome_kmer 

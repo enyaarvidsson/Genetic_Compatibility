@@ -9,6 +9,7 @@ import pickle
 from tqdm import tqdm
 
 
+
 # FOR THE GENES --------------------
 
 """ directory= "/storage/enyaa/FINAL/KMER/gene_kmer"

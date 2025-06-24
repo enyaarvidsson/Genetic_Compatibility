@@ -5,6 +5,7 @@ import subprocess
 import os
 
 
+
 k = 5 
 threads = 8
 fasta_file = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"  

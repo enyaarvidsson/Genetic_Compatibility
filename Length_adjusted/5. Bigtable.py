@@ -20,8 +20,8 @@ for gene_name in tqdm(all_genes, desc="Processing genes"): #sorted(all_genes):
     if "/" in gene_name: # Just for look-up
         gene_name = gene_name.replace("/", "?")
     
-    # Load 5mer score
-    path = f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl" #original
+    # Load length-adjusted 5mer score
+    path = f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl" #500bp
     
     if not os.path.exists(path):
         continue 
@@ -142,9 +142,9 @@ gene_lengths_df = pd.DataFrame(list(gene_lengths.items()), columns=['Gene_name',
 table_genes_df = table_genes_df.merge(gene_lengths_df, on='Gene_name', how='left')
 
 # Save
-path_bigtable = "/storage/jolunds/FINAL/5mer_score_bigtable.csv"
+path_bigtable = "/storage/jolunds/FINAL/length_adjusted_5mer_score_bigtable.csv"
 big_table_df.to_csv(path_bigtable, index=False)
-path_table_genes = "/storage/jolunds/FINAL/5mer_score_table_genes.csv"
+path_table_genes = "/storage/jolunds/FINAL/length_adjusted_5mer_score_table_genes.csv"
 table_genes_df.to_csv(path_table_genes, index=False)
 
 end_time = time.time()

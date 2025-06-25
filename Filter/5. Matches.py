@@ -37,7 +37,7 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
         matched_bacteria = []
     
     gene_df = taxonomy_df.copy()
-    gene_df["Match_info"] = gene_df["Bacteria_ID"].apply(
+    gene_df["Match_status"] = gene_df["Bacteria_ID"].apply(
         lambda x: "Match" if x in set(matched_bacteria) else "Non-match"
     )
 

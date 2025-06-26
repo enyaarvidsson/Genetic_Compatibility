@@ -1,6 +1,6 @@
-# Create one big pdf with all the histograms, for the 5mer score
+# Create one big pdf with all the histograms, for the length-adjusted 5mer score
 # OR
-# create histograms for one specific gene
+# create histograms for one specific gene (length-adjusted)
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -18,7 +18,7 @@ start_time = time.time()
 # FOR ALL GENES OR ONE SPECIFIC GENE - change here:
 # gene = "all" - for all genes
 # gene = "tet(Q)" - for the specific gene tet(Q) - can be changed to any other gene
-gene = "all"
+gene = "tet(Q)"
 
 
 # GENE_NAMES ----------------------------------------
@@ -32,7 +32,7 @@ else:
 
 # PDF -----------------------------------------------
 if gene == "all":
-    pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot.pdf") 
+    pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_length-adjusted.pdf") 
 
 
 # FOR EACH GENE_NAME --------------------------------
@@ -42,7 +42,10 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
         gene_name = gene_name.replace("/", "?")
 
     # EUCLIDEAN DISTANCE for one gene ---------------
-    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl") 
+    eu_path = f"/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
+    if not os.path.exists(eu_path): # skip genes that are shorter than 500 bp because those files don't exist
+        continue
+    euclidean_gene_df = pd.read_pickle(eu_path) 
         # euclidean_gene_df - has Bacteria_ID, Euclidean_distance, Phylum columns and Match_status
     no_match_count = euclidean_gene_df["Match_status"].value_counts().get("Match", 0)
     
@@ -118,7 +121,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
 
     for ax, phylum in zip(g.axes.flat, phylum_counts.index):
         ax.set_title(f"{phylum} (n={phylum_counts[phylum]}, m={matches_phylum_counts[phylum]})", fontsize=15)
-        ax.set_xlabel("5mer score", fontsize=15)
+        ax.set_xlabel("Length-adjusted 5mer score", fontsize=15)
         #ax.set_ylabel("Number of Bacteria", fontsize=14)
         #ax.xaxis.set_major_locator(MaxNLocator(nbins=8)) # number of ticks on x-axis
         ax.tick_params(axis='both', labelsize=13)
@@ -141,10 +144,10 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
         pdfFile.close() # close pdf
     else:
         #plt.tight_layout() # in report
-        plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_{gene_name}.png') # for one gene
+        plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_500bp_{gene_name}.png') # for one gene
         plt.close() # for one gene
 
 
 end_time = time.time()
 total_time = (end_time - start_time)/60
-print(f"Bigplot_pdf created in: {total_time} minutes")
+print(f"Bigplot_pdf (length-adjusted) created in: {total_time} minutes")

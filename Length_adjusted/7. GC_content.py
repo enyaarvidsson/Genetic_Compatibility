@@ -1,8 +1,6 @@
-# This script includes four parts:
-    # Calculating GC-content for the bacteria, and storing it in a pkl file
-    # Calculating GC-content for the genes, and storing it in a pkl file
-    # Calculating the GC-ratio and making a scatterplot (GC-ratio vs 5mer score)
-    # Calculating the GC-difference and making a scatterplot (GC-difference vs 5mer score)
+# This script includes two parts:
+    # Calculating the GC-ratio and making a scatterplot (GC-ratio vs length-adjusted 5mer score)
+    # Calculating the GC-difference and making a scatterplot (GC-difference vs length-adjusted 5mer score)
 
 from Bio.SeqUtils import gc_fraction
 import pandas as pd
@@ -17,84 +15,9 @@ from tqdm import tqdm
 import seaborn as sns
 
 
-# GC-CONTENT FOR BACTERIA ------------------------------------
-# GC-content for the bacteria
-
-start_time = time.time()
-
-# Filtered bacteria 
-filtered_bacteria_df = pd.read_csv("/storage/enyaa/FINAL/filtered_bacteria.csv")
-    # 72690 bacteria
-
-# Get the file paths 
-file_paths_file = "/storage/shared/data_for_master_students/enya_and_johanna/genome_filepaths.tsv"
-df = pd.read_csv(file_paths_file, sep="\t", header=None, names=["Filepath"]) 
-df["Filename"] = df["Filepath"].apply(os.path.basename) # gets the filename (not whole filepath) 
-df["Bacteria_ID"] = df["Filename"].str.split("_").str[:2].str.join("_") # gets the bacterial ID
-df = df.drop(columns=["Filename"])
-    # 1631873 bacteria
-
-filtered_bacteria_df = pd.merge(filtered_bacteria_df[['Bacteria_ID']], df, on='Bacteria_ID', how='left')
-    # 72690 bacteria, with filepaths
-file_paths = filtered_bacteria_df['Filepath'].tolist()
-
-results = []
-for path in tqdm(file_paths, desc="Processing bacteria"):
-
-    filename = os.path.basename(path) # gets the filename (not whole filepath) 
-    bacteria_id = "_".join(filename.split("_")[:2]) # gets the bacterial ID
-
-    sequences = [] 
-
-    with gzip.open(path, "rt") as handle:
-        sequences = [str(record.seq) for record in SeqIO.parse(handle, "fasta")] # store all sequences in a fasta file, in a list
-    
-    all_sequences = "".join(sequences) # join all sequences    
-        
-    # Compute GC-content for the entire dataset
-    gc_content = round(gc_fraction(all_sequences) * 100, 2)  # Convert fraction to percentage
-
-    results.append([bacteria_id, gc_content])
-
-# Save to pickle
-df_output = pd.DataFrame(results, columns=["Bacteria_ID", "GC_content"])
-output_file = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-with open(output_file, "wb") as f:
-    pickle.dump(df_output, f)
-
-
-end_time = time.time()
-total_time = (end_time - start_time)/60
-print(f"Bacteria gc-content file created in: {total_time} minutes")
-
-
-# GC-CONTENT FOR GENES ---------------------------------------
-""" file_path = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"
-output_file = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
-
-results = []
-
-for record in tqdm(SeqIO.parse(file_path, "fasta"), desc="Processing genes"):
-    gene = record.id.split(" ")[0] 
-    gene_name = gene.split("|")[5]
-
-    # compute GC-content
-    gc_content = round(gc_fraction(record.seq) * 100, 2)
-
-    results.append([gene_name, gc_content])
-
-# Save to pkl
-df_output = pd.DataFrame(results, columns=["Gene_name", "GC_content"])
-
-with open(output_file, "wb") as f:
-    pickle.dump(df_output, f)
-
-print(f"Saved pickle results to {output_file}")
- """
-
 # SCATTERPLOT RATIO for matches ------------------------------
 # Calculates the GC-ratio between genes and genomes - only for filtered matches
-# Makes a scatterplot gc-ratio vs 5mer score
+# Makes a scatterplot gc-ratio vs length-adjusted 5mer score
 """ 
 start_time = time.time()
 

@@ -1,4 +1,5 @@
-# Create dictionary for euclidean distance (5mer score) between genes and genomes
+# Create dictionary for euclidean distance (5mer score) between 
+# genomes and length-adjusted genes 
 
 import pandas as pd
 import pickle
@@ -7,10 +8,10 @@ from tqdm import tqdm
 
 
 # Gene kmer distributions
-with open ("/storage/enyaa/FINAL/KMER/gene_kmer_distributions.pkl", "rb") as file:
+with open ("/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/gene_kmer_distributions_500bp.pkl", "rb") as file:
     gene_dictionary = pickle.load(file)
 genes_df = pd.DataFrame.from_dict(gene_dictionary, orient="index").T
-    # 6048 genes
+    # 5887 genes
 
 # Genome kmer distributions
 with open ("/storage/enyaa/FINAL/KMER/genome_kmer_distributions.pkl", "rb") as file_genomes:
@@ -27,11 +28,9 @@ euclidean = cdist(genes_df.T, genomes_df.T, metric='euclidean')
 euclidean_df = pd.DataFrame(euclidean, 
                            index=genes_df.columns, 
                            columns=genomes_df.columns)
-    
-print(euclidean_df)
 
 # Save 
-euclidean_df.to_pickle("/storage/enyaa/FINAL/KMER/euclidean_df.pkl")
+euclidean_df.to_pickle("/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_df_500bp.pkl")
 
-print("Done calculating euclidean distance between genes and genomes!")
+print("Done calculating euclidean distance for length-adjusted genes!")
 

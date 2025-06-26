@@ -114,4 +114,5 @@ plt.yticks(fontsize=14)
 plt.savefig("/storage/jolunds/FINAL/REFERENCES/5mer_score_references.png")
 plt.close()
 
-reference_df.to_csv("/storage/jolunds/FINAL/5mer_score_reference_df.csv")
+print(f"p-value for 5mer score: {p_value}")
+reference_df.to_csv("/storage/jolunds/FINAL/REFERENCES/5mer_score_reference_df.csv")

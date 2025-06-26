@@ -14,13 +14,13 @@ from matplotlib.ticker import MaxNLocator
 start_time = time.time() 
 
 # FOR ALL GENES OR ONE SPECIFIC GENE - change here:
-# gene = all - for all genes
+# gene = "all" - for all genes
 # gene = "tet(Q)" - for the specific gene tet(Q) - can be changed to any other gene
-gene = all
+gene = "tet(Q)"
 
 
 # GENE_NAMES ----------------------------------------
-if gene == all:
+if gene == "all":
     # Load file with gene_names (sorted)
     gene_name_file = "/storage/enyaa/FINAL/gene_names.txt"
     gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
@@ -29,7 +29,7 @@ else:
 
 
 # PDF -----------------------------------------------
-if gene == all:
+if gene == "all":
     pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot.pdf") 
 
 
@@ -40,9 +40,8 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
         gene_name = gene_name.replace("/", "?")
 
     # EUCLIDEAN DISTANCE for one gene ---------------
-    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl") 
-        # denna borde innehålla följande (och bara bestå av top 6 phyla)
-        # euclidean_gene_df - has Bacteria_ID, Euclidean_distance, Match_status and Phylum columns
+    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl") 
+        # euclidean_gene_df - has Bacteria_ID, Euclidean_distance, Phylum columns and Match_status
     no_match_count = euclidean_gene_df["Match_status"].value_counts().get("Match", 0)
     
     matches = 1 # if there exists matches
@@ -69,7 +68,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
 
         # create a df for match and a df for no_match
         matches_phylum_df = phylum_df[phylum_df["Match_status"] == "Match"]
-        no_matches_phylum_df = phylum_df[phylum_df["Match_status"] == "No_match"]  
+        no_matches_phylum_df = phylum_df[phylum_df["Match_status"] == "Non-match"]  
 
         # How many no_matches to keep
         if matches == 1: # if matches exists
@@ -110,7 +109,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     # Create histogram with stacked bars
     g = sns.FacetGrid(downsampled_df, col="Phylum", col_order=phylum_counts.index, sharey=False,
                        col_wrap=3, height=4, aspect=1.2)
-    g.map_dataframe(sns.histplot, x="Euclidean_distance", hue="Match_status", hue_order=["No_match", "Match"], 
+    g.map_dataframe(sns.histplot, x="Euclidean_distance", hue="Match_status", hue_order=["Non-match", "Match"], 
                     multiple="stack", bins=bin_edges)
     
     g.set_axis_labels("Euclidean distance", "") # Number of bacteria
@@ -134,12 +133,12 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     else:
         plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
     
-    if gene == all:
+    if gene == "all":
         pdfFile.savefig(g.figure)
         plt.close(g.figure)
         pdfFile.close() # close pdf
     else:
-        plt.tight_layout()
+        #plt.tight_layout() # in report
         plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_{gene_name}.png') # for one gene
         plt.close() # for one gene
 

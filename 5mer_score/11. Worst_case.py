@@ -6,6 +6,7 @@ import os
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tqdm import tqdm
 
 start_time = time.time()
 
@@ -20,11 +21,12 @@ with open (file_path, "rb") as file:
     genome_dictionary = pickle.load(file)
     
 genomes_df = pd.DataFrame.from_dict(genome_dictionary, orient="index").T.fillna(0) # Change to dataframe
-        
+
+  
 genes_df = genes_df.reindex(genomes_df.index).fillna(0) # Fill missing k-mers in genes_df
 
 # Compute max difference row by row
-for gene_name in genes_df.columns:
+for gene_name in tqdm(genes_df.columns, desc="Processing genes"):
     gene_values = genes_df[gene_name].values  # Extract 1D array 
         
     # Compute absolute differences
@@ -51,13 +53,11 @@ for gene_name in genes_df.columns:
     })
         
     # Save file
-    if "/" in gene:
-            gene = gene.replace("/", "?")
+    if "/" in gene_name:
+            gene_name = gene_name.replace("/", "?")
             
     path = f"/storage/jolunds/FINAL/WORST_CASE/worst_case_{gene_name}.csv"
     worst_case_df.to_csv(path)
-
-
 
 # Scatterplot 5mer score vs 5mer worst case combined
 gene_name = "tet(Q)" 
@@ -152,6 +152,3 @@ plt.savefig(f'./5mer_vs_worst_{gene_name}.png')
 plt.close()
 
 print(f"Scatterplot created for {gene_name}")
-
-
-

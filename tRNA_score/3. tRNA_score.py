@@ -124,8 +124,8 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
     
-    match_file = f"/storage/jolunds/FINAL/MATCH_INFO/{gene_name}_match_info.csv"
-    gene_match_df = pd.read_csv(match_file)
+    match_file = f"/storage/jolunds/FINAL/MATCH_INFO/{gene_name}_match_info.tsv"
+    gene_match_df = pd.read_csv(match_file, sep="\t")
 
     gene_tRNA_df = gene_tRNA_df.merge(gene_match_df, on=["Bacteria_ID"])
     

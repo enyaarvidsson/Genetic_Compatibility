@@ -23,7 +23,6 @@ if no_match_count == 0:
     print("No matches for gene:", gene_name)
     matches = 0
 
-
 # ONLY MATHCES ----------------
 #tRNA_score_df = tRNA_score_df[tRNA_score_df["Match_status"] == 'Match']
 
@@ -35,7 +34,7 @@ match_count = (tRNA_score_df["Match_status"] == "Match").sum()
 
 # create a df for match and a df for no_match
 matches_df = tRNA_score_df[tRNA_score_df["Match_status"] == "Match"]
-no_matches_df = tRNA_score_df[tRNA_score_df["Match_status"] == "No_match"]  
+no_matches_df = tRNA_score_df[tRNA_score_df["Match_status"] == "Non_match"]  
 
 # How many no_matches to keep
 if matches == 1: # if matches exists

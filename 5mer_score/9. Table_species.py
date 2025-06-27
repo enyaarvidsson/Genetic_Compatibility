@@ -6,7 +6,7 @@ start_time = time.time()
 
 # Choose gene
 gene_name = 'SHV-53' 
-gene_euclidean_df = pd.read_pickle(f"/storage/enyaa/REVISED/KMER/euclidean_split_genes_filtered/euclidean_df_{gene_name}.pkl").reset_index(drop=True)
+gene_euclidean_df = pd.read_pickle(f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl").reset_index(drop=True)
 
 gene_matching_df = gene_euclidean_df[gene_euclidean_df["Match_status"] == "Match"]
 

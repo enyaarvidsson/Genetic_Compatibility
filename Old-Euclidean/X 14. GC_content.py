@@ -199,7 +199,7 @@ print(f"Scatterplot created in: {total_time} minutes!")
 # SCATTERPLOT RATIO for matches - FASTER ----------------
 # Calculates the GC-ratio between genes and genomes - only for filtered matches
 # Makes a scatterplot gc-ratio vs euclidean
-'''
+
 
 start_time = time.time()
 

@@ -141,12 +141,14 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     if gene == "all":
         pdfFile.savefig(g.figure)
         plt.close(g.figure)
-        pdfFile.close() # close pdf
     else:
         #plt.tight_layout() # in report
         plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_500bp_{gene_name}.png') # for one gene
         plt.close() # for one gene
 
+
+if gene == "all":
+    pdfFile.close() # close pdf
 
 end_time = time.time()
 total_time = (end_time - start_time)/60

@@ -107,12 +107,12 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
         genome_dict = bacteria_codon_freq[bacteria_id]
     
         # tRNA score
-        tRNA_score, tRNA_max_score, tRNA_max_codon = tRNA_score(gene_dict, genome_dict)
+        tRNA_value, tRNA_max_score, tRNA_max_codon = tRNA_score(gene_dict, genome_dict)
 
         # Append results with additional information
         tRNA_score_list.append({
             "Bacteria_ID": bacteria_id,
-            "tRNA_score": tRNA_score,
+            "tRNA_score": tRNA_value,
             "Worst_case_tRNA": tRNA_max_score,
             "Worst_codon": tRNA_max_codon
         })
@@ -120,10 +120,16 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
     gene_tRNA_df = pd.DataFrame(tRNA_score_list)
     gene_tRNA_df = gene_tRNA_df.merge(bacteria_df, on='Bacteria_ID', how='left')
    
-    # Save
+    # Add match status and taxonomy
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
-        
+    
+    match_file = f"/storage/jolunds/FINAL/MATCH_INFO/{gene_name}_match_info.tsv"
+    gene_match_df = pd.read_csv(match_file, sep="\t")
+
+    gene_tRNA_df = gene_tRNA_df.merge(gene_match_df, on=["Bacteria_ID"])
+    
+    # Save  
     save_path = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
     gene_tRNA_df.to_csv(save_path, index=False)
 

@@ -8,16 +8,17 @@ import os
 file = f"/storage/jolunds/FINAL/REFERENCES/5mer_score_reference_df.csv"
 reference_5mer_df = pd.read_csv(file)
 
-reference_genes = reference_5mer_df["Gene_name", "Bacteria_ID", "Reference"]
+reference_genes = reference_5mer_df[["Gene_name", "Bacteria_ID", "Reference"]]
 
 # Loop through length-adjusted 5mer score
 reference_list = []
 
 for gene_name in reference_genes["Gene_name"].unique():
-    gene_file = f"scores_folder/{gene_name}_scores.csv"  
+    gene_file = f"/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl" 
     
     if os.path.exists(gene_file):
-        gene_df = pd.read_csv(gene_file)
+        gene_df = pd.read_pickle(gene_file)
+        gene_df["Gene_name"] = gene_name
         
         # Subset the reference df for this gene
         ref_subset = reference_genes[reference_genes["Gene_name"] == gene_name]

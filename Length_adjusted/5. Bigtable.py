@@ -21,7 +21,7 @@ for gene_name in tqdm(all_genes, desc="Processing genes"): #sorted(all_genes):
         gene_name = gene_name.replace("/", "?")
     
     # Load length-adjusted 5mer score
-    path = f"/storage/enyaa/REVISED/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl" #500bp
+    path = f"/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl" #500bp
     
     if not os.path.exists(path):
         continue 

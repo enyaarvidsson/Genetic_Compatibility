@@ -1,12 +1,8 @@
 import json
 import pandas as pd
-import pickle
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.spatial.distance import euclidean
 import random
-import numpy as np
-import os
 from scipy.stats import mannwhitneyu
 
 # COMPATIBLE --------------------------------------------
@@ -22,12 +18,17 @@ for key, value in card_info.items():
         if isinstance(value, dict) and 'model_name' in value:
            chromosomal_genes.append(value['model_name'])
 
+# Load gene names
+with open("/storage/enyaa/FINAL/gene_names.txt", "r") as f:
+    all_genes = [line.strip() for line in f]
+
+chromosomal_genes = [gene for gene in chromosomal_genes if gene in all_genes]
 
 # Loop through chromosomal genes
 not_mobile_genes = []
 for gene_name in chromosomal_genes:
-    file = f"{gene_name}_euclidean.tsv" #load euclidean distance file
-    gene_euclidean_df = pd.read_csv(file, sep="\t")
+    file = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl" #load euclidean distance file
+    gene_euclidean_df = pd.read_pickle(file)
 
     # Remove non-matches
     gene_euclidean_df = gene_euclidean_df[gene_euclidean_df["Match_status"] == "Match"]
@@ -68,11 +69,11 @@ for phylum, gene_prefixes in gene_groups.items():
     random.seed(50)
     gene_matches = random.sample(gene_matches, k=50 if len(gene_matches) >= 50 else len(gene_matches))
     
-    for gene in gene_matches:
+    for gene_name in gene_matches:
         # Load Euclidean data
-        file_path = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes_filtered/euclidean_df_{gene}.pkl"
+        file_path = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes//euclidean_df_{gene_name}.pkl"
         gene_euclidean_df = pd.read_pickle(file_path)
-        gene_euclidean_df.insert(0, 'Gene_name', gene)
+        gene_euclidean_df.insert(0, 'Gene_name', gene_name)
         
         # Append
         incompatible_list.append(gene_euclidean_df)

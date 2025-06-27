@@ -107,12 +107,12 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
         genome_dict = bacteria_codon_freq[bacteria_id]
     
         # tRNA score
-        tRNA_score, tRNA_max_score, tRNA_max_codon = tRNA_score(gene_dict, genome_dict)
+        tRNA_value, tRNA_max_score, tRNA_max_codon = tRNA_score(gene_dict, genome_dict)
 
         # Append results with additional information
         tRNA_score_list.append({
             "Bacteria_ID": bacteria_id,
-            "tRNA_score": tRNA_score,
+            "tRNA_score": tRNA_value,
             "Worst_case_tRNA": tRNA_max_score,
             "Worst_codon": tRNA_max_codon
         })

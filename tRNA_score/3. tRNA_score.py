@@ -126,7 +126,8 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
     
     match_file = f"/storage/jolunds/FINAL/MATCH_INFO/{gene_name}_match_info.tsv"
     gene_match_df = pd.read_csv(match_file, sep="\t")
-
+    gene_match_df = gene_match_df[["Bacteria_ID", "Match_status"]]
+    
     gene_tRNA_df = gene_tRNA_df.merge(gene_match_df, on=["Bacteria_ID"])
     
     # Save  

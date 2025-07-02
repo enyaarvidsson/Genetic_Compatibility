@@ -17,7 +17,9 @@ if "/" in gene_name:
 # tRNA SCORE ------------------
 filepath_tRNA = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
 tRNA_score_df = pd.read_csv(filepath_tRNA)
-    
+
+print(tRNA_score_df.head())
+matches = 1    
 no_match_count = tRNA_score_df["Match_status"].value_counts().get("Match", 0)    
 if no_match_count == 0:
     print("No matches for gene:", gene_name)
@@ -61,9 +63,15 @@ filepath_eu = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{ge
 euclidean_df = pd.read_pickle(filepath_eu)
 
 # MERGE THEM TOGETHER ----------
-tRNA_and_euclidean_df = pd.merge(tRNA_score_downsampled_df, euclidean_df, on='Bacteria_ID', how='inner')
+tRNA_and_euclidean_df = pd.merge(
+    tRNA_score_downsampled_df,
+    euclidean_df,
+    on='Bacteria_ID',
+    how='inner',
+    suffixes=('', '_drop')
+)
 
-
+tRNA_and_euclidean_df = tRNA_and_euclidean_df[[col for col in tRNA_and_euclidean_df.columns if not col.endswith('_drop')]]
 # SPEARMAN CORRELATION --------
 correlation, p_value = spearmanr(tRNA_and_euclidean_df['Euclidean_distance'], tRNA_and_euclidean_df['tRNA_score'])
 
@@ -83,7 +91,7 @@ sns.scatterplot(
     #color='darkorange'
 )
 
-plt.xlabel('Euclidean distance')
+plt.xlabel('Length-adjusted 5mer score')
 plt.ylabel('tRNA score')
 
 plt.savefig(f'./tRNA_vs_5mer_{gene_name}.png')     

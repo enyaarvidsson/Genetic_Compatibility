@@ -21,7 +21,7 @@ for gene_name in tqdm(all_genes, desc="Processing genes"): #sorted(all_genes):
         gene_name = gene_name.replace("/", "?")
     
     # Load tRNA score
-    path = f"/storage/jolunds/REVISED/tRNA/tRNA_score_new/tRNA_score_{gene_name}.csv" #tRNA
+    path = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv" #tRNA
     if not os.path.exists(path):
         continue 
 

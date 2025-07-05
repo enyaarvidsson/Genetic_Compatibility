@@ -59,7 +59,7 @@ for filename in tqdm(os.listdir(directory), desc="Processing genomes"):
     kmer_dict[bacteria_id] = df.set_index("kmer")["count"].to_dict() # Adds the normalized counts to dictionary
 
 # Save dictionary to a pickle-file:
-save_path = "/storage/enyaa/FINAL/KMER/genome_kmer_distributions.pkl"    
+save_path = "./FINAL/KMER/genome_kmer_distributions.pkl"    
 with open(save_path, "wb") as f:
     pickle.dump(kmer_dict, f)
     

@@ -127,7 +127,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
+    euclidean_gene_df = pd.read_pickle(f"./FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
 
     # filter to only include matching bacteria
     filtered_euclidean_gene_df = euclidean_gene_df[euclidean_gene_df["Match_status"] == "Match"]

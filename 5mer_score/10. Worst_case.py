@@ -151,7 +151,7 @@ plt.tick_params(axis='both', labelsize=12)
 plt.legend(fontsize=14, loc="upper center")
 plt.tight_layout()
 
-plt.savefig(f'./FINAL/WORST_CASE/5mer_vs_worst_{gene_name}.png')     
+plt.savefig(f'./FINAL/5mer_vs_worst_{gene_name}.png')     
 plt.close()
 
 print(f"Scatterplot created for {gene_name}")

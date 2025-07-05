@@ -7,9 +7,9 @@ import os
 
 k = 5 
 threads = 8
-fasta_file = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"  
-temp_directory = "/storage/enyaa/FINAL/KMER/gene_remove_temp" # used as kmc database & temporary directory
-output_directory = "/storage/enyaa/FINAL/KMER/gene_kmer"
+fasta_file = "./nucleotide_fasta_protein_homolog_model.fasta"  
+temp_directory = "./FINAL/KMER/gene_remove_temp" # used as kmc database & temporary directory
+output_directory = "./FINAL/KMER/gene_kmer"
 
 for record in SeqIO.parse(fasta_file, "fasta"):
     gene = record.id.split(" ")[0] 

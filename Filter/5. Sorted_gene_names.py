@@ -25,7 +25,7 @@ def natural_sort_key(s):
 extracted_data.sort(key=natural_sort_key)
 
 # save the sorted gene names in txt file
-output_file = "/storage/enyaa/FINAL/gene_names.txt"
+output_file = "./FINAL/gene_names.txt"
 with open(output_file, "w") as f:
     f.write("\n".join(extracted_data))
 

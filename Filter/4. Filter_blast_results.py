@@ -84,13 +84,13 @@ def filter_blast_results(file_path):
     
     # Convert back to DataFrame and save the results
     filtered_df = pd.DataFrame(filtered_results)
-    path = f"/storage/jolunds/FINAL/BLAST/filtered_blast_results.tsv"
+    path = f"./FINAL/BLAST/filtered_blast_results.tsv"
     filtered_df.to_csv(path, sep="\t", index=False)
 
     
 start_time = time.time()
 
-path = "/storage/enyaa/FINAL/BLAST/blast_results.txt"
+path = "./FINAL/BLAST/blast_results.txt"
 filter_blast_results(path)
 
 end_time = time.time()

@@ -1,10 +1,11 @@
 import pandas as pd
 import time
 from tqdm import tqdm
+import os
 
 start_time = time.time()
 # Get the gene IDs and bacteria IDs from the BLAST results
-with open(f"/storage/jolunds/FINAL/BLAST/filtered_blast_results.tsv") as f: # opens the file for reading, stores in f
+with open(f"./FINAL/BLAST/filtered_blast_results.tsv") as f: # opens the file for reading, stores in f
     lines = f.readlines()[1:] # reads the lines in the file and stores them in a list "lines"
 
 gene_header = [line.split("\t")[0] for line in lines]
@@ -20,11 +21,11 @@ blast_results_df = pd.DataFrame({
     })
 
 # Load gene names
-with open("/storage/enyaa/FINAL/gene_names.txt", "r") as f:
+with open("./FINAL/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
 
 # Read taxonomy file
-taxonomy_file = "/storage/enyaa/FINAL/filtered_bacteria.csv"
+taxonomy_file = "./FINAL/filtered_bacteria.csv"
 taxonomy_df = pd.read_csv(taxonomy_file) 
 
 gene_count = 0
@@ -43,7 +44,9 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
 
     if "/" in gene_name: # Just for look-up
         gene_name = gene_name.replace("/", "?")
-    gene_df.to_csv(f"/storage/jolunds/FINAL/MATCH_INFO/{gene_name}_match_info.tsv", sep="\t", index=False)
+    directory = os.path.join('.', 'FINAL', 'MATCH_INFO')
+    os.makedirs(directory)
+    gene_df.to_csv(f"./FINAL/MATCH_INFO/{gene_name}_match_info.tsv", sep="\t", index=False)
 
 end_time = time.time()
 total_time = (end_time -start_time)/60

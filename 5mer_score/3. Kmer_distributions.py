@@ -11,7 +11,8 @@ from tqdm import tqdm
 
 # FOR THE GENES --------------------
 
-directory= "/storage/enyaa/FINAL/KMER/gene_kmer"
+directory= "./FINAL/KMER/gene_kmer"
+os.makedirs(directory, exist_ok=True)
 kmer_dict = {} # empty dictionary
 
 for filename in tqdm(os.listdir(directory), desc="Processing genes"): # goes through filenames in directory
@@ -32,7 +33,7 @@ for filename in tqdm(os.listdir(directory), desc="Processing genes"): # goes thr
 
 
 # Save dictionary to a pickle-file:
-save_path = "/storage/enyaa/FINAL/KMER/gene_kmer_distributions.pkl"     
+save_path = "./FINAL/KMER/gene_kmer_distributions.pkl"     
 with open(save_path, "wb") as f:
     pickle.dump(kmer_dict, f) 
     
@@ -41,7 +42,8 @@ print("Created a pkl-file for the genes kmer distributions!")
 
 # FOR THE GENOMES -----------------
 
-""" directory= "/storage/enyaa/FINAL/KMER/genome_kmer" 
+""" directory= "./FINAL/KMER/genome_kmer" 
+os.makedirs(directory, exist_ok=True)
 kmer_dict = {}
 
 for filename in tqdm(os.listdir(directory), desc="Processing genomes"):

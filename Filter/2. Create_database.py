@@ -9,7 +9,7 @@ from Bio import SeqIO
 
 
 # Filtered bacteria ------------------
-filtered_bacteria_df = pd.read_csv("/storage/enyaa/FINAL/filtered_bacteria.csv")
+filtered_bacteria_df = pd.read_csv("./FINAL/filtered_bacteria.csv")
     # 72690 bacteria
 
 # Get the file paths -----------------
@@ -26,7 +26,10 @@ file_paths = filtered_bacteria_df['Filepath'].tolist()
 
 # Create BLAST database --------------
 # Open bacterial genome zip-files and create a fasta file
-output_fasta = "/storage/enyaa/FINAL/BLAST/genomes.fasta"
+directory = os.path.join('.', 'FINAL', 'BLAST')
+os.makedirs(directory)
+    
+output_fasta = "./FINAL/BLAST/genomes.fasta"
 
 with open(output_fasta, "w") as fasta_out:
     
@@ -47,7 +50,9 @@ with open(output_fasta, "w") as fasta_out:
 
 
 # Create BLAST database:
-blast_path = "/storage/enyaa/FINAL/BLAST/DB/blast" # name for BLAST database
+directory = os.path.join('.', 'FINAL', 'BLAST', 'DB')
+os.makedirs(directory)
+blast_path = "./FINAL/BLAST/DB/blast" # name for BLAST database
 subprocess.run(["makeblastdb", "-in", output_fasta, "-dbtype", "nucl", "-out", blast_path]) # runs this command in the terminal to create a database
 
 

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import random
 from scipy.stats import mannwhitneyu
+import os
 
 # COMPATIBLE --------------------------------------------
 with open("/storage/jolunds/card.json", "r") as file:
@@ -19,7 +20,7 @@ for key, value in card_info.items():
            chromosomal_genes.append(value['model_name'])
 
 # Load gene names
-with open("/storage/enyaa/FINAL/gene_names.txt", "r") as f:
+with open("./FINAL/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
 
 chromosomal_genes = [gene for gene in chromosomal_genes if gene in all_genes]
@@ -27,7 +28,7 @@ chromosomal_genes = [gene for gene in chromosomal_genes if gene in all_genes]
 # Loop through chromosomal genes
 not_mobile_genes = []
 for gene_name in chromosomal_genes:
-    file = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl" #load euclidean distance file
+    file = f"./FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl" #load euclidean distance file
     gene_euclidean_df = pd.read_pickle(file)
 
     # Remove non-matches
@@ -50,7 +51,7 @@ compatible_df['Reference'] = "Compatible"
 # INCOMPATIBLE ------------------------
 
 # Load gene names
-with open("/storage/enyaa/FINAL/gene_names.txt", "r") as f:
+with open("./FINAL/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
 
 # Define gene groups
@@ -71,7 +72,7 @@ for phylum, gene_prefixes in gene_groups.items():
     
     for gene_name in gene_matches:
         # Load Euclidean data
-        file_path = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes//euclidean_df_{gene_name}.pkl"
+        file_path = f"./FINAL/KMER/euclidean_split_genes//euclidean_df_{gene_name}.pkl"
         gene_euclidean_df = pd.read_pickle(file_path)
         gene_euclidean_df.insert(0, 'Gene_name', gene_name)
         
@@ -112,8 +113,10 @@ plt.tight_layout()
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 
-plt.savefig("/storage/jolunds/FINAL/REFERENCES/5mer_score_references.png")
+directory = os.path.join('.', 'FINAL', 'REFERENCES')
+os.makedirs(directory, exist_ok=True) 
+plt.savefig("./FINAL/REFERENCES/5mer_score_references.png")
 plt.close()
 
 print(f"p-value for 5mer score: {p_value}")
-reference_df.to_csv("/storage/jolunds/FINAL/REFERENCES/5mer_score_reference_df.csv")
+reference_df.to_csv("./FINAL/REFERENCES/5mer_score_reference_df.csv")

@@ -44,5 +44,6 @@ filtered_bacteria_df = filtered_bacteria_df[filtered_bacteria_df["Phylum"].isin(
     # 72690 bacteria, with taxonomic info
 
 # Save to csv file -------------------
-path = '/storage/enyaa/FINAL/filtered_bacteria.csv'
+os.makedirs("FINAL")
+path = './FINAL/filtered_bacteria.csv'
 filtered_bacteria_df.to_csv(path, index=False)

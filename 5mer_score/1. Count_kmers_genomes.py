@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 
 # Filtered bacteria -----------------
-filtered_bacteria_df = pd.read_csv("/storage/enyaa/FINAL/filtered_bacteria.csv")
+filtered_bacteria_df = pd.read_csv("./FINAL/filtered_bacteria.csv")
     # 72690 bacteria
 
 # Get the file paths 
@@ -25,9 +25,13 @@ filtered_bacteria_df = pd.merge(filtered_bacteria_df[['Bacteria_ID']], df, on='B
 file_paths = filtered_bacteria_df['Filepath'].tolist()
 
 
+base_dir = os.path.join('.', 'FINAL', 'KMER')
+temp_dir = os.path.join(base_dir, 'genome_temp_remove')
+output_dir = os.path.join(base_dir, 'genome_kmer')
 
-temp_dir = "/storage/enyaa/FINAL/KMER/genome_temp_remove" # Temporary directory
-output_dir = "/storage/enyaa/FINAL/KMER/genome_kmer"
+# Create them
+for path in [base_dir, temp_dir, output_dir]:
+    os.makedirs(path, exist_ok=True)
 
 k = 5 # Decide k for k-mers
 threads = 1 # Number of threads

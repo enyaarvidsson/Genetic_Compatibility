@@ -8,13 +8,13 @@ from tqdm import tqdm
 
 
 # Gene kmer distributions
-with open ("/storage/enyaa/FINAL/KMER/gene_kmer_distributions.pkl", "rb") as file:
+with open ("./FINAL/KMER/gene_kmer_distributions.pkl", "rb") as file:
     gene_dictionary = pickle.load(file)
 genes_df = pd.DataFrame.from_dict(gene_dictionary, orient="index").T
     # 6048 genes
 
 # Genome kmer distributions
-with open ("/storage/enyaa/FINAL/KMER/genome_kmer_distributions.pkl", "rb") as file_genomes:
+with open ("./FINAL/KMER/genome_kmer_distributions.pkl", "rb") as file_genomes:
     genome_dictionary = pickle.load(file_genomes)
 genomes_df = pd.DataFrame.from_dict(genome_dictionary, orient="index").T.fillna(0)
     # 72690 genomes
@@ -31,7 +31,8 @@ euclidean_df = pd.DataFrame(euclidean,
     
 
 # Save each row (gene) as a separate .pkl file
-output_dir = "/storage/enyaa/FINAL/KMER/euclidean_split_genes/"
+output_dir = "./FINAL/KMER/euclidean_split_genes/"
+os.makedirs(output_dir, exist_ok=True)
 for gene_name in tqdm(euclidean_df.index, desc="Processing genes"):
     gene_df = euclidean_df.loc[[gene_name]] 
     
@@ -42,7 +43,7 @@ for gene_name in tqdm(euclidean_df.index, desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    info_df = pd.read_csv(f"/storage/jolunds/FINAL/MATCH_INFO/{gene_name}_match_info.tsv", sep="\t")
+    info_df = pd.read_csv(f"./FINAL/MATCH_INFO/{gene_name}_match_info.tsv", sep="\t")
         # 72690 rows (bacteria), columns: Bacteria_ID, Domain, Phylum, Class, Order, Family, Genus, Species, Match_info
 
     gene_df = pd.merge(gene_df, info_df, on='Bacteria_ID', how='left')    

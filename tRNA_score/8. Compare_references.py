@@ -5,7 +5,7 @@ from scipy.stats import mannwhitneyu
 import os
 
 # Load reference data from 5mer score
-file = f"/storage/jolunds/FINAL/REFERENCES/5mer_score_reference_df.csv"
+file = f"./FINAL/REFERENCES/5mer_score_reference_df.csv"
 reference_5mer_df = pd.read_csv(file)
 
 reference_genes = reference_5mer_df[["Gene_name", "Bacteria_ID", "Reference"]]
@@ -14,7 +14,7 @@ reference_genes = reference_5mer_df[["Gene_name", "Bacteria_ID", "Reference"]]
 reference_list = []
 
 for gene_name in reference_genes["Gene_name"].unique():
-    gene_file = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
+    gene_file = f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
     
     if os.path.exists(gene_file):
         gene_df = pd.read_csv(gene_file)
@@ -59,7 +59,7 @@ plt.ylabel("", fontsize=16)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.tight_layout()
-plt.savefig("/storage/jolunds/FINAL/REFERENCES/tRNA_score_referneces_van.png")
+plt.savefig("./FINAL/REFERENCES/tRNA_score_referneces_van.png")
 plt.close()
 
 print(f"p-value for tRNA score with van is {p_value_van}")
@@ -74,7 +74,7 @@ plt.ylabel("", fontsize=16)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.tight_layout()
-plt.savefig("/storage/jolunds/FINAL/REFERENCES/tRNA_score_referneces_beta.png")
+plt.savefig("./FINAL/REFERENCES/tRNA_score_referneces_beta.png")
 plt.close()
 
 print(f"p-value for tRNA score with beta-lactamases is {p_value_beta}")

@@ -24,7 +24,7 @@ gene = "all"
 # GENE_NAMES ----------------------------------------
 if gene == "all":
     # Load file with gene_names (sorted)
-    gene_name_file = "/storage/enyaa/FINAL/gene_names.txt"
+    gene_name_file = "./FINAL/gene_names.txt"
     gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
 else:
     gene_names_df = pd.DataFrame({"Gene_name": [gene]}) # to pick only one gene
@@ -32,7 +32,7 @@ else:
 
 # PDF -----------------------------------------------
 if gene == "all":
-    pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot.pdf") 
+    pdfFile = PdfPages("./FINAL/bigplot.pdf") 
 
 
 # FOR EACH GENE_NAME --------------------------------
@@ -42,7 +42,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
         gene_name = gene_name.replace("/", "?")
 
     # EUCLIDEAN DISTANCE for one gene ---------------
-    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl") 
+    euclidean_gene_df = pd.read_pickle(f"./FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl") 
         # euclidean_gene_df - has Bacteria_ID, Euclidean_distance, Phylum columns and Match_status
     no_match_count = euclidean_gene_df["Match_status"].value_counts().get("Match", 0)
     
@@ -140,7 +140,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
         plt.close(g.figure)
     else:
         #plt.tight_layout() # in report
-        plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_{gene_name}.png') # for one gene
+        plt.savefig(f'./FINAL/histogram_5mer_{gene_name}.png') # for one gene
         plt.close() # for one gene
 
 

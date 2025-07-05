@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 """ start_time = time.time()
 
 # Load the files with GC-content for genes and genomes 
-file_bacteria = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-file_genes = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+file_bacteria = "./FINAL/GC/gc_content_bacteria.pkl"
+file_genes = "./FINAL/GC/gc_content_genes.pkl"
 
 with open(file_bacteria, "rb") as f:
     bacteria_gc_df = pickle.load(f)
@@ -29,7 +29,7 @@ with open(file_genes, "rb") as f:
 
 
 # Go through each gene
-gene_names = "/storage/enyaa/FINAL/gene_names.txt"
+gene_names = "./FINAL/gene_names.txt"
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 tRNA_score_all = []
@@ -44,7 +44,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    tRNA_gene_df = pd.read_csv(f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv") 
+    tRNA_gene_df = pd.read_csv(f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv") 
 
     # filter to only include matching bacteria
     filtered_tRNA_gene_df = tRNA_gene_df[tRNA_gene_df["Match_status"] == "Match"]
@@ -79,7 +79,7 @@ plt.tick_params(axis='both', labelsize=12)
 #plt.title(f"GC-ratio vs tRNA score for matching genes and genomes")
 plt.tight_layout()
 plt.grid(True)
-plt.savefig(f'/home/enyaa/gene_genome/GC_ratio_vs_tRNA.png') 
+plt.savefig(f'./FINAL/GC_ratio_vs_tRNA.png') 
 plt.close()
 
 end_time = time.time()
@@ -94,8 +94,8 @@ print(f"Scatterplot ratio created in: {total_time} minutes!") """
 start_time = time.time()
 
 # Load the files with GC-content for genes and genomes 
-file_bacteria = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-file_genes = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+file_bacteria = "./FINAL/GC/gc_content_bacteria.pkl"
+file_genes = "./FINAL/GC/gc_content_genes.pkl"
 
 with open(file_bacteria, "rb") as f:
     bacteria_gc_df = pickle.load(f)
@@ -104,7 +104,7 @@ with open(file_genes, "rb") as f:
 
 
 # Go through each gene
-gene_names = "/storage/enyaa/FINAL/gene_names.txt"
+gene_names = "./FINAL/gene_names.txt"
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 tRNA_score_all = []
@@ -119,7 +119,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    tRNA_gene_df = pd.read_csv(f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv") 
+    tRNA_gene_df = pd.read_csv(f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv") 
 
     # filter to only include matching bacteria
     filtered_tRNA_gene_df = tRNA_gene_df[tRNA_gene_df["Match_status"] == "Match"]
@@ -154,7 +154,7 @@ plt.tick_params(axis='both', labelsize=12)
 #plt.title(f"GC-difference vs tRNA score for matching genes and genomes")
 plt.tight_layout()
 plt.grid(True)
-plt.savefig(f'/home/enyaa/gene_genome/GC_diff_vs_tRNA.png') 
+plt.savefig(f'./FINAL/GC_diff_vs_tRNA.png') 
 plt.close()
 
 end_time = time.time()
@@ -171,8 +171,8 @@ print(f"Scatterplot difference created in: {total_time} minutes!") """
 start_time = time.time()
 
 # Load the files with GC-content for genes and genomes 
-file_bacteria = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-file_genes = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+file_bacteria = "./FINAL/GC/gc_content_bacteria.pkl"
+file_genes = "./FINAL/GC/gc_content_genes.pkl"
 
 with open(file_bacteria, "rb") as f:
     bacteria_gc_df = pickle.load(f)
@@ -180,7 +180,7 @@ with open(file_genes, "rb") as f:
     genes_gc_df = pickle.load(f)
 
 # Go through each gene
-gene_names = "/storage/enyaa/FINAL/gene_names.txt"
+gene_names = "./FINAL/gene_names.txt"
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 tRNA_score_all = []
@@ -195,7 +195,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    tRNA_gene_df = pd.read_csv(f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv") 
+    tRNA_gene_df = pd.read_csv(f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv") 
 
     # filter to only include matching bacteria
     filtered_tRNA_gene_df = tRNA_gene_df[tRNA_gene_df["Match_status"] == "Match"]
@@ -275,7 +275,7 @@ plt.tick_params(axis='both', labelsize=12)
 #plt.legend(title='Phylum', bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 plt.grid(True)
-plt.savefig(f'/home/enyaa/gene_genome/bins.png') 
+plt.savefig(f'./FINAL/bins.png') 
 plt.close()
 
 

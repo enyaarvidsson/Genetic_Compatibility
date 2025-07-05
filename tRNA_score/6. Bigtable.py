@@ -8,7 +8,7 @@ from tqdm import tqdm
 start_time = time.time()
 
 # Load gene names
-with open("/storage/enyaa/FINAL/gene_names.txt", "r") as f:
+with open("./FINAL/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
 
 # Loop through genes in all_genes 
@@ -21,7 +21,7 @@ for gene_name in tqdm(all_genes, desc="Processing genes"): #sorted(all_genes):
         gene_name = gene_name.replace("/", "?")
     
     # Load tRNA score
-    path = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv" #tRNA
+    path = f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv" #tRNA
     if not os.path.exists(path):
         continue 
 
@@ -123,7 +123,7 @@ big_table_df = pd.concat(big_table_list).reset_index(drop=True)
 table_genes_df = pd.concat(table_genes_list).reset_index(drop=True)
 
 # Gene length
-filepath = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"
+filepath = "./nucleotide_fasta_protein_homolog_model.fasta"
 
 gene_lengths = {}
 for record in SeqIO.parse(filepath, "fasta"):
@@ -143,9 +143,9 @@ gene_lengths_df = pd.DataFrame(list(gene_lengths.items()), columns=['Gene_name',
 table_genes_df = table_genes_df.merge(gene_lengths_df, on='Gene_name', how='left')
 
 # Save
-path_bigtable = "/storage/jolunds/FINAL/tRNA_score_bigtable.csv"
+path_bigtable = "./FINAL/tRNA_score_bigtable.csv"
 big_table_df.to_csv(path_bigtable, index=False)
-path_table_genes = "/storage/jolunds/FINAL/tRNA_score_table_genes.csv"
+path_table_genes = "./FINAL/tRNA_score_table_genes.csv"
 table_genes_df.to_csv(path_table_genes, index=False)
 
 end_time = time.time()

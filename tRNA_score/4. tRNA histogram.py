@@ -15,7 +15,7 @@ np.random.seed(42)
 if "/" in gene_name:
     gene_name = gene_name.replace("/", "?")
 
-file_path = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
+file_path = f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
 tRNA_score_df = pd.read_csv(file_path)
     # 67098 rows (bacteria), with columns: Bacteria_ID, tRNA_score, Worst_case_tRNA, Worst_codon, taxonomic info (multiple columns), Match_status
 
@@ -108,7 +108,7 @@ else:
     plt.figtext(0.5, 0.95, f"Gene name: {gene_name} - NO MATCHES", ha="center", fontsize=14)     
 
 #plt.tight_layout() # in report
-plt.savefig(f'/home/enyaa/gene_genome/histogram_tRNA_score_{gene_name}.png')     
+plt.savefig(f'./FINAL/histogram_tRNA_score_{gene_name}.png')     
 plt.close(g.figure)
 
 print(f"tRNA score histogram created for {gene_name}")

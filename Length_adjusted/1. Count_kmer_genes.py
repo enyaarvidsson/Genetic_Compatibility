@@ -9,10 +9,13 @@ import os
 
 k = 5 
 threads = 8
-fasta_file = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"  
-temp_directory = "/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/gene_remove_temp" # used as kmc database & temporary directory
-output_directory = "/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/gene_kmer_500bp"
+fasta_file = "./nucleotide_fasta_protein_homolog_model.fasta"  
+base_dir = os.path.join('.', 'FINAL', 'KMER', 'FOR_GENE_LENGTH')
+temp_directory = os.path.join(base_dir, 'gene_remove_temp') # used as kmc database & temporary directory
+output_directory = os.path.join(base_dir, 'gene_kmer_500bp')
 
+for path in [base_dir, temp_directory, output_directory]:
+    os.makedirs(path, exist_ok=True)
 
 # GENE LENGTH ----------------------------
 for record in tqdm(SeqIO.parse(fasta_file, "fasta"), desc="Processing genes"):

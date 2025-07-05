@@ -1,12 +1,12 @@
 import pandas as pd
 
 # tRNA score
-tRNA_table_genes = pd.read_csv("/storage/jolunds/FINAL/tRNA_table_genes.csv")
+tRNA_table_genes = pd.read_csv("./FINAL/tRNA_table_genes.csv")
 tRNA_table_genes = tRNA_table_genes[["Gene_name", "Mean", "Num_phyla"]]
 
 
 # length-adjusted 5mer score
-eu500_table_genes = pd.read_csv("/storage/jolunds/FINAL/length_adjusted_5mer_score_table_genes.csv")
+eu500_table_genes = pd.read_csv("./FINAL/length_adjusted_5mer_score_table_genes.csv")
 eu500_table_genes = eu500_table_genes[["Gene_name", "Mean", "Num_phyla"]]
 
 

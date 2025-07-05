@@ -7,7 +7,7 @@ import pickle
 from tqdm import tqdm
 
 
-directory= "/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/gene_kmer_500bp"
+directory= "./FINAL/KMER/FOR_GENE_LENGTH/gene_kmer_500bp"
 kmer_dict = {} # empty dictionary
 
 for filename in tqdm(os.listdir(directory), desc="Processing genes"): # goes through filenames in directory
@@ -27,7 +27,7 @@ for filename in tqdm(os.listdir(directory), desc="Processing genes"): # goes thr
 
 
 # Save dictionary to a pickle-file:  
-save_path = "/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/gene_kmer_distributions_500bp.pkl"  
+save_path = "./FINAL/KMER/FOR_GENE_LENGTH/gene_kmer_distributions_500bp.pkl"  
 with open(save_path, "wb") as f:
     pickle.dump(kmer_dict, f)
 

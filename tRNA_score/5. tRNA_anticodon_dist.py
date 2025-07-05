@@ -8,14 +8,14 @@ import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 
 # Load bacteria ids
-file = "/storage/enyaa/FINAL/filtered_bacteria.csv"
+file = "./FINAL/filtered_bacteria.csv"
 bacteria_df = pd.read_csv(file)
 bacteria_ids = bacteria_df[["Bacteria_ID"]]
 
 all_counts = []
 
 for bacteria_id in tqdm(bacteria_ids["Bacteria_ID"], desc="Processing genomes"):
-    tRNA_file = f"/storage/jolunds/FINAL/tRNA_SCAN/{bacteria_id}_trnascan.txt"
+    tRNA_file = f"./FINAL/tRNA_SCAN/{bacteria_id}_trnascan.txt"
     if not os.path.exists(tRNA_file):
         continue
     
@@ -35,11 +35,11 @@ anticodon_counts_df = pd.DataFrame(all_counts).fillna(0)
 anticodon_counts_df = bacteria_df.merge(anticodon_counts_df, on="Bacteria_ID", how="right")
 
 # Save dataframe
-save_path = "/storage/jolunds/FINAL/anticodon_counts.csv"
+save_path = "./FINAL/anticodon_counts.csv"
 anticodon_counts_df.to_csv(save_path)
 
 # Create barplots for each phylum
-file = "/storage/jolunds/FINAL/anticodon_counts.csv"
+file = "./FINAL/anticodon_counts.csv"
 anticodon_counts_df = pd.read_csv(file, index_col=0)
 
 id_columns = ["Bacteria_ID", "Phylum"]
@@ -91,4 +91,4 @@ for phylum in top_phyla:
     ###
     
     plt.tight_layout()
-    plt.savefig(f"/storage/jolunds/FINAL/barplot_{phylum}.png")
+    plt.savefig(f"./FINAL/barplot_{phylum}.png")

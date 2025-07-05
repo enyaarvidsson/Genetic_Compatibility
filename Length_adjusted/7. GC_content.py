@@ -22,8 +22,8 @@ import seaborn as sns
 """ start_time = time.time()
 
 # Load the files with GC-content for genes and genomes
-file_bacteria = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-file_genes = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+file_bacteria = "./FINAL/GC/gc_content_bacteria.pkl"
+file_genes = "./FINAL/GC/gc_content_genes.pkl"
 
 with open(file_bacteria, "rb") as f:
     bacteria_gc_df = pickle.load(f)
@@ -33,7 +33,7 @@ with open(file_genes, "rb") as f:
     # 6048 rows
 
 # Go through each gene
-gene_names = "/storage/enyaa/FINAL/gene_names.txt"
+gene_names = "./FINAL/gene_names.txt"
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 euclidean_distances_all = []
@@ -48,7 +48,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    eu_path = f"/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
+    eu_path = f"./FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
     if not os.path.exists(eu_path): # skip genes that are shorter than 500 bp because those files don't exist
         continue
     euclidean_gene_df = pd.read_pickle(eu_path)
@@ -86,7 +86,7 @@ plt.tick_params(axis='both', labelsize=14)
 #plt.title("GC-ratio vs length-adjusted 5mer score for matching genes and genomes")
 plt.tight_layout()
 plt.grid(True)
-plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_ratio_length_adjusted.png') 
+plt.savefig('./FINAL/scatterplot_GC_ratio_length_adjusted.png') 
 plt.close()
 
 
@@ -102,8 +102,8 @@ print(f"Scatterplot ratio (vs length-adjusted) created in: {total_time} minutes!
 start_time = time.time()
 
 # Load the files with GC-content for genes and genomes
-file_bacteria = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-file_genes = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+file_bacteria = "./FINAL/GC/gc_content_bacteria.pkl"
+file_genes = "./FINAL/GC/gc_content_genes.pkl"
 
 with open(file_bacteria, "rb") as f:
     bacteria_gc_df = pickle.load(f)
@@ -113,7 +113,7 @@ with open(file_genes, "rb") as f:
     # 6048 rows
 
 # Go through each gene
-gene_names = "/storage/enyaa/FINAL/gene_names.txt"
+gene_names = "./FINAL/gene_names.txt"
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 euclidean_distances_all = []
@@ -128,7 +128,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    eu_path = f"/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
+    eu_path = f"./FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
     if not os.path.exists(eu_path): # skip genes that are shorter than 500 bp because those files don't exist
         continue
     euclidean_gene_df = pd.read_pickle(eu_path)
@@ -166,7 +166,7 @@ plt.tick_params(axis='both', labelsize=14)
 #plt.title("GC-diff vs length-adjusted 5mer score for matching genes and genomes")
 plt.tight_layout()
 plt.grid(True)
-plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_diff_length_adjusted.png') 
+plt.savefig('./FINAL/scatterplot_GC_diff_length_adjusted.png') 
 plt.close()
 
 

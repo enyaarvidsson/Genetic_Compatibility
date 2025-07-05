@@ -24,7 +24,7 @@ gene = "tet(Q)"
 # GENE_NAMES ----------------------------------------
 if gene == "all":
     # Load file with gene_names (sorted)
-    gene_name_file = "/storage/enyaa/FINAL/gene_names.txt"
+    gene_name_file = "./FINAL/gene_names.txt"
     gene_names_df = pd.read_csv(gene_name_file, header=None, names=["Gene_name"])
 else:
     gene_names_df = pd.DataFrame({"Gene_name": [gene]}) # to pick only one gene
@@ -32,7 +32,7 @@ else:
 
 # PDF -----------------------------------------------
 if gene == "all":
-    pdfFile = PdfPages("/home/enyaa/gene_genome/bigplot_length-adjusted.pdf") 
+    pdfFile = PdfPages("./FINAL/bigplot_length-adjusted.pdf") 
 
 
 # FOR EACH GENE_NAME --------------------------------
@@ -42,7 +42,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
         gene_name = gene_name.replace("/", "?")
 
     # EUCLIDEAN DISTANCE for one gene ---------------
-    eu_path = f"/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
+    eu_path = f"./FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl"
     if not os.path.exists(eu_path): # skip genes that are shorter than 500 bp because those files don't exist
         continue
     euclidean_gene_df = pd.read_pickle(eu_path) 
@@ -143,7 +143,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"):
         plt.close(g.figure)
     else:
         #plt.tight_layout() # in report
-        plt.savefig(f'/home/enyaa/gene_genome/histogram_5mer_500bp_{gene_name}.png') # for one gene
+        plt.savefig(f'./FINAL/histogram_5mer_500bp_{gene_name}.png') # for one gene
         plt.close() # for one gene
 
 

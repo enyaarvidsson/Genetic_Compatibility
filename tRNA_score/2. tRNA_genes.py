@@ -15,7 +15,7 @@ def count_codons(sequence):
     return Counter(codon for codon in codons) #if len(codon) == 3)
 
 
-fasta_file = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"
+fasta_file = "./nucleotide_fasta_protein_homolog_model.fasta"
 rows = []
 
 for record in SeqIO.parse(fasta_file, "fasta"):
@@ -37,6 +37,6 @@ incorrect_codons = ['GGN', 'NGG', 'GGS', 'GYC', 'KGG', 'AAR', 'ATY', 'CGY',
 gene_codons_df = gene_codons_df[~gene_codons_df["Codon"].isin(incorrect_codons)]
 
 # Save as csv
-save_path = "/storage/jolunds/FINAL/codons_genes.csv"
+save_path = "./FINAL/codons_genes.csv"
 gene_codons_df.to_csv(save_path)
 

@@ -23,7 +23,7 @@ import seaborn as sns
 """ start_time = time.time()
 
 # Filtered bacteria 
-filtered_bacteria_df = pd.read_csv("/storage/enyaa/FINAL/filtered_bacteria.csv")
+filtered_bacteria_df = pd.read_csv("./FINAL/filtered_bacteria.csv")
     # 72690 bacteria
 
 # Get the file paths 
@@ -58,7 +58,9 @@ for path in tqdm(file_paths, desc="Processing bacteria"):
 
 # Save to pickle
 df_output = pd.DataFrame(results, columns=["Bacteria_ID", "GC_content"])
-output_file = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
+directory = os.path.join('.', 'FINAL', 'GC')
+os.makedirs(directory, exist_ok=True) 
+output_file = "./FINAL/GC/gc_content_bacteria.pkl"
 with open(output_file, "wb") as f:
     pickle.dump(df_output, f)
 
@@ -69,8 +71,8 @@ print(f"Bacteria gc-content file created in: {total_time} minutes") """
 
 
 # GC-CONTENT FOR GENES ---------------------------------------
-""" file_path = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"
-output_file = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+""" file_path = "./nucleotide_fasta_protein_homolog_model.fasta"
+output_file = "./FINAL/GC/gc_content_genes.pkl"
 
 results = []
 
@@ -99,8 +101,8 @@ print(f"Saved pickle results to {output_file}")
 start_time = time.time()
 
 # Load the files with GC-content for genes and genomes
-file_bacteria = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-file_genes = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+file_bacteria = "./FINAL/GC/gc_content_bacteria.pkl"
+file_genes = "./FINAL/GC/gc_content_genes.pkl"
 
 with open(file_bacteria, "rb") as f:
     bacteria_gc_df = pickle.load(f)
@@ -110,7 +112,7 @@ with open(file_genes, "rb") as f:
     # 6048 rows
 
 # Go through each gene
-gene_names = "/storage/enyaa/FINAL/gene_names.txt"
+gene_names = "./FINAL/gene_names.txt"
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 euclidean_distances_all = []
@@ -160,7 +162,7 @@ plt.tick_params(axis='both', labelsize=14)
 #plt.title("GC-ratio vs euclidean distance for matching genes and genomes")
 plt.tight_layout()
 plt.grid(True)
-plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_ratio_5mer_score.png') 
+plt.savefig('./FINAL/GC/scatterplot_GC_ratio_5mer_score.png') 
 plt.close()
 
 
@@ -176,8 +178,8 @@ print(f"Scatterplot ratio (vs 5mer score) created in: {total_time} minutes!")
 start_time = time.time()
 
 # Load the files with GC-content for genes and genomes
-file_bacteria = "/storage/enyaa/FINAL/GC/gc_content_bacteria.pkl"
-file_genes = "/storage/enyaa/FINAL/GC/gc_content_genes.pkl"
+file_bacteria = "./FINAL/GC/gc_content_bacteria.pkl"
+file_genes = "./FINAL/GC/gc_content_genes.pkl"
 
 with open(file_bacteria, "rb") as f:
     bacteria_gc_df = pickle.load(f)
@@ -187,7 +189,7 @@ with open(file_genes, "rb") as f:
     # 6048 rows
 
 # Go through each gene
-gene_names = "/storage/enyaa/FINAL/gene_names.txt"
+gene_names = "./FINAL/gene_names.txt"
 gene_names_df = pd.read_csv(gene_names, header=None, names=["Gene_name"])
 
 euclidean_distances_all = []
@@ -202,7 +204,7 @@ for gene_name in tqdm(gene_names_df["Gene_name"], desc="Processing genes"): # tq
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
 
-    euclidean_gene_df = pd.read_pickle(f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
+    euclidean_gene_df = pd.read_pickle(f"./FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl")
 
     # filter to only include matching bacteria
     filtered_euclidean_gene_df = euclidean_gene_df[euclidean_gene_df["Match_status"] == "Match"]
@@ -237,7 +239,7 @@ plt.tick_params(axis='both', labelsize=14)
 #plt.title("GC-difference vs euclidean distance for matching genes and genomes")
 plt.tight_layout()
 plt.grid(True)
-plt.savefig('/home/enyaa/gene_genome/scatterplot_GC_diff_5mer_score.png') 
+plt.savefig('./FINAL/GC/scatterplot_GC_diff_5mer_score.png') 
 plt.close()
 
 

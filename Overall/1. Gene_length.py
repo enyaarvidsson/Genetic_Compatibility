@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import spearmanr, pearsonr, wilcoxon
 
 # Original 5mer score
-file = "/storage/jolunds/FINAL/5mer_score_table_genes.csv"
+file = "./FINAL/5mer_score_table_genes.csv"
 table_genes_df = pd.read_csv(file)
 table_genes_df['Mean_matches'] = pd.to_numeric(table_genes_df['Mean_matches'], errors='coerce')
 
@@ -20,7 +20,7 @@ stat_eu, p_value_eu = wilcoxon(group1_eu, group2_eu, alternative='less')
 print(f"For 5mer score: statistic: {stat_eu}, p-value: {p_value_eu}")
 
 # Euclidean 500 bp
-file_500 = "/storage/jolunds/FINAL/length_adjusted_5mer_score_table_genes.csv"
+file_500 = "./FINAL/length_adjusted_5mer_score_table_genes.csv"
 table_genes_500 = pd.read_csv(file_500)
 
 table_genes_500['Mean_matches'] = pd.to_numeric(table_genes_500['Mean_matches'], errors='coerce')
@@ -37,7 +37,7 @@ stat_500, p_value_500 = wilcoxon(group1_500, group2_500, alternative='less')
 print(f"For length-adjusted 5mer score: statistic: {stat_500}, p-value: {p_value_500}")
 
 # tRNA score
-file_tRNA = "/storage/jolunds/FINAL/tRNA_table_genes.csv"
+file_tRNA = "./FINAL/tRNA_table_genes.csv"
 table_genes_tRNA = pd.read_csv(file_tRNA)
 
 # Convert to numeric, force errors (non-numeric values) to NaN
@@ -71,7 +71,7 @@ plt.xlim(min - 0.002, max + 0.002)
 
 plt.grid(True)
 plt.tight_layout()
-plt.savefig('./gene_length_5mer_score.png') 
+plt.savefig('./FINAL/gene_length_5mer_score.png') 
 plt.close()
 
 # Scatterplot mean eu vs gene length
@@ -85,7 +85,7 @@ plt.xlim(min - 0.002, max + 0.002)
 
 plt.grid(True)
 plt.tight_layout()
-plt.savefig('./gene_length_500bp.png') 
+plt.savefig('./FINAL/gene_length_500bp.png') 
 plt.close()
 
 # Scatterplot mean tRNA score vs gene length
@@ -99,6 +99,6 @@ plt.xlim(min - 0.002, max + 0.002)
 
 plt.grid(True)
 plt.tight_layout()
-plt.savefig('./gene_length_tRNA.png') 
+plt.savefig('./FINAL/gene_length_tRNA.png') 
 plt.close()
 

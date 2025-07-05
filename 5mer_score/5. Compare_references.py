@@ -7,7 +7,7 @@ from scipy.stats import mannwhitneyu
 import os
 
 # COMPATIBLE --------------------------------------------
-with open("/storage/jolunds/card.json", "r") as file:
+with open("./card.json", "r") as file:
     card_info = json.load(file)
 search_word = "chromosom" # Search for chromosom
 

@@ -51,11 +51,11 @@ def tRNA_score(gene_dist, genome_dist): # One-sided
 start_time = time.time()
 
 # Load gene names
-with open("/storage/enyaa/FINAL/gene_names.txt", "r") as f:
+with open("./FINAL/gene_names.txt", "r") as f:
     all_genes = [line.strip() for line in f]
 
 # Load file with counted codons for each gene 
-gene_codons_file = '/storage/jolunds/FINAL/codons_genes.csv'
+gene_codons_file = './FINAL/codons_genes.csv'
 gene_codons_df = pd.read_csv(gene_codons_file)
 
 # Remove stop codons 
@@ -63,7 +63,7 @@ stop_codons = {"TAA", "TAG", "TGA"}
 gene_codons_df = gene_codons_df[~gene_codons_df['Codon'].isin(stop_codons)]
 
 # Load filtered bacteria 
-file = "/storage/enyaa/FINAL/filtered_bacteria.csv"
+file = "./FINAL/filtered_bacteria.csv"
 bacteria_df = pd.read_csv(file)
 bacteria_ids = bacteria_df["Bacteria_ID"].tolist()
 
@@ -77,7 +77,7 @@ for gene_name, group in gene_codons_df.groupby("Gene_name"):
 # Compute frequencies for each genome
 bacteria_codon_freq = {}
 for bacteria_id in bacteria_ids:
-    tRNA_file = f"/storage/jolunds/FINAL/tRNA_SCAN/{bacteria_id}_trnascan.txt"
+    tRNA_file = f"./FINAL/tRNA_SCAN/{bacteria_id}_trnascan.txt"
     if not os.path.exists(tRNA_file):
         continue 
     
@@ -124,14 +124,16 @@ for gene_name in tqdm(all_genes, desc="Processing genes"):
     if "/" in gene_name:
         gene_name = gene_name.replace("/", "?")
     
-    match_file = f"/storage/jolunds/FINAL/MATCH_INFO/{gene_name}_match_info.tsv"
+    match_file = f"./FINAL/MATCH_INFO/{gene_name}_match_info.tsv"
     gene_match_df = pd.read_csv(match_file, sep="\t")
     gene_match_df = gene_match_df[["Bacteria_ID", "Match_status"]]
     
     gene_tRNA_df = gene_tRNA_df.merge(gene_match_df, on=["Bacteria_ID"])
     
     # Save  
-    save_path = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
+    directory = os.path.join('.', 'FINAL', 'tRNA_SCORE')
+    os.makedirs(directory, exist_ok=True) 
+    save_path = f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
     gene_tRNA_df.to_csv(save_path, index=False)
 
 end_time = time.time()

@@ -5,7 +5,7 @@ from scipy.stats import mannwhitneyu
 import os
 
 # Load reference data from 5mer score
-file = f"/storage/jolunds/FINAL/REFERENCES/5mer_score_reference_df.csv"
+file = f"./FINAL/REFERENCES/5mer_score_reference_df.csv"
 reference_5mer_df = pd.read_csv(file)
 
 reference_genes = reference_5mer_df[["Gene_name", "Bacteria_ID", "Reference"]]
@@ -14,7 +14,7 @@ reference_genes = reference_5mer_df[["Gene_name", "Bacteria_ID", "Reference"]]
 reference_list = []
 
 for gene_name in reference_genes["Gene_name"].unique():
-    gene_file = f"/storage/enyaa/FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl" 
+    gene_file = f"./FINAL/KMER/FOR_GENE_LENGTH/euclidean_split_genes_500bp/euclidean_df_{gene_name}.pkl" 
     
     if os.path.exists(gene_file):
         gene_df = pd.read_pickle(gene_file)
@@ -49,7 +49,7 @@ plt.ylabel("", fontsize=16)
 plt.tight_layout()
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
-plt.savefig("/storage/jolunds/FINAL/REFERENCES/length_adjusted_5mer_score_references.png")
+plt.savefig("./FINAL/REFERENCES/length_adjusted_5mer_score_references.png")
 plt.close()
 
 print(f"p-value for length-adjusted 5mer score: {p_value}")

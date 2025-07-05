@@ -7,7 +7,7 @@ from scipy.stats import spearmanr
 import numpy as np
 
 
-gene_name = "NDM-1" 
+gene_name = "NDM-1" # Choose gene
 np.random.seed(42)
 
 if "/" in gene_name:
@@ -15,7 +15,7 @@ if "/" in gene_name:
 
 
 # tRNA SCORE ------------------
-filepath_tRNA = f"/storage/jolunds/FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
+filepath_tRNA = f"./FINAL/tRNA_SCORE/{gene_name}_tRNA_score.csv"
 tRNA_score_df = pd.read_csv(filepath_tRNA)
 
 print(tRNA_score_df.head())
@@ -59,7 +59,7 @@ tRNA_score_downsampled_df = pd.concat(tRNA_score_downsampled, ignore_index=True)
 
 
 # EUCLIDEAN DISTANCE ----------
-filepath_eu = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl"
+filepath_eu = f"./FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl"
 euclidean_df = pd.read_pickle(filepath_eu)
 
 # MERGE THEM TOGETHER ----------
@@ -94,7 +94,7 @@ sns.scatterplot(
 plt.xlabel('Length-adjusted 5mer score')
 plt.ylabel('tRNA score')
 
-plt.savefig(f'./tRNA_vs_5mer_{gene_name}.png')     
+plt.savefig(f'./FINAL/tRNA_vs_5mer_{gene_name}.png')     
 plt.close()
 
 print(f"Scatterplot created for {gene_name}")

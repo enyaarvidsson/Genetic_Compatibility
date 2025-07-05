@@ -11,12 +11,12 @@ from tqdm import tqdm
 start_time = time.time()
 
 # Load k-mer distributions for all genes    
-with open ("/storage/enyaa/FINAL/KMER/gene_kmer_distributions.pkl", "rb") as file:
+with open ("./FINAL/KMER/gene_kmer_distributions.pkl", "rb") as file:
     gene_dictionary = pickle.load(file)
 
 genes_df = pd.DataFrame.from_dict(gene_dictionary, orient="index").T #Change to dataframe
 
-file_path = f"/storage/enyaa/FINAL/KMER/genome_kmer_distributions.pkl"
+file_path = f"./FINAL/KMER/genome_kmer_distributions.pkl"
 with open (file_path, "rb") as file:
     genome_dictionary = pickle.load(file)
     
@@ -55,8 +55,11 @@ for gene_name in tqdm(genes_df.columns, desc="Processing genes"):
     # Save file
     if "/" in gene_name:
             gene_name = gene_name.replace("/", "?")
-            
-    path = f"/storage/jolunds/FINAL/WORST_CASE/worst_case_{gene_name}.csv"
+
+    directory = os.path.join('.', 'FINAL', 'WORST_CASE')
+    os.makedirs(directory, exist_ok=True) 
+
+    path = f"./FINAL/WORST_CASE/worst_case_{gene_name}.csv"
     worst_case_df.to_csv(path)
 
 # Scatterplot 5mer score vs 5mer worst case combined
@@ -69,7 +72,7 @@ if "/" in gene_name:
 
 
 # EUCLIDEAN DISTANCE ------------------
-filepath_eu = f"/storage/enyaa/FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl"
+filepath_eu = f"./FINAL/KMER/euclidean_split_genes/euclidean_df_{gene_name}.pkl"
 euclidean_df = pd.read_pickle(filepath_eu)
 
 no_match_count = euclidean_df["Match_status"].value_counts().get("Match", 0)    
@@ -106,7 +109,7 @@ euclidean_downsampled.append(pd.concat([matches_df, downsampled_no_matches_df]))
 euclidean_downsampled_df = pd.concat(euclidean_downsampled, ignore_index=True)
 
 # WORST CASE ------------------
-file_path = f"/storage/jolunds/FINAL/WORST_CASE/worst_case_{gene_name}.csv"
+file_path = f"./FINAL/WORST_CASE/worst_case_{gene_name}.csv"
 worst_case_df = pd.read_csv(file_path)
 worst_case_df = worst_case_df.drop(worst_case_df.columns[0], axis=1)
 
@@ -148,7 +151,7 @@ plt.tick_params(axis='both', labelsize=12)
 plt.legend(fontsize=14, loc="upper center")
 plt.tight_layout()
 
-plt.savefig(f'./5mer_vs_worst_{gene_name}.png')     
+plt.savefig(f'./FINAL/WORST_CASE/5mer_vs_worst_{gene_name}.png')     
 plt.close()
 
 print(f"Scatterplot created for {gene_name}")

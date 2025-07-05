@@ -8,7 +8,7 @@ import concurrent.futures
 import os
 from tqdm import tqdm
 '''
-file = "/storage/enyaa/FINAL/filtered_bacteria.csv"
+file = "./FINAL/filtered_bacteria.csv"
 bacteria_df = pd.read_csv(file)
 bacteria_id_set = set(bacteria_df['Bacteria_ID'])
 
@@ -31,12 +31,14 @@ def run_trnascan_job(bacteria_id, path):
     tmp_fasta_path = None
     try:
         # Create a temporary unzipped FASTA file
-        with tempfile.NamedTemporaryFile(suffix=".fna", delete=False, dir='/storage/jolunds/temp_dir') as tmp_fasta:
+        with tempfile.NamedTemporaryFile(suffix=".fna", delete=False, dir='./temp_dir') as tmp_fasta:
             with gzip.open(path, 'rb') as f_in:
                 shutil.copyfileobj(f_in, tmp_fasta)
             tmp_fasta_path = tmp_fasta.name
 
-        output_file = f"/storage/jolunds/FINAL/tRNA_SCAN/{bacteria_id}_trnascan.txt"
+        directory = os.path.join('.', 'FINAL', 'tRNA_SCAN')
+        os.makedirs(directory, exist_ok=True) 
+        output_file = f"./FINAL/tRNA_SCAN/{bacteria_id}_trnascan.txt"
 
         # Run tRNAscan-SE
         command = ["tRNAscan-SE", "-B", "-o", output_file, tmp_fasta_path]
@@ -58,7 +60,7 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=num_parallel_jobs) as ex
 
 
 # Remove genomes with few tRNAs found
-directory = "/storage/jolunds/FINAL/tRNA_SCAN/"
+directory = "./FINAL/tRNA_SCAN/"
 row_threshold = 35
 
 # Loop through files, count rows and remove files with rows < 35

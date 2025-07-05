@@ -29,7 +29,6 @@ base_dir = os.path.join('.', 'FINAL', 'KMER')
 temp_dir = os.path.join(base_dir, 'genome_temp_remove')
 output_dir = os.path.join(base_dir, 'genome_kmer')
 
-# Create them
 for path in [base_dir, temp_dir, output_dir]:
     os.makedirs(path, exist_ok=True)
 

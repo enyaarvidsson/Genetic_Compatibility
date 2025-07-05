@@ -5,6 +5,14 @@ import seaborn as sns
 import random
 from scipy.stats import mannwhitneyu
 import os
+import urllib.request
+
+# Download data from CARD
+url = "https://card.mcmaster.ca/latest/data"
+filename = "card.json"
+
+urllib.request.urlretrieve(url, filename)
+print("Download complete.")
 
 # COMPATIBLE --------------------------------------------
 with open("./card.json", "r") as file:

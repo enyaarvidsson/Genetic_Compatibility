@@ -6,7 +6,7 @@ from Bio import SeqIO
 
 
 # headers in the fasta file
-filepath = "/storage/enyaa/nucleotide_fasta_protein_homolog_model.fasta"
+filepath = "./nucleotide_fasta_protein_homolog_model.fasta"
 fasta_headers = [record.description for record in SeqIO.parse(filepath, "fasta")]
 
 # loop through each header to extract gene names
